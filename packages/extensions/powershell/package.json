@@ -1,0 +1,69 @@
+{
+  "name": "@autorest/powershell",
+  "version": "3.0.0",
+  "description": "AutoRest PowerShell Cmdlet Generator",
+  "main": "dist/exports.js",
+  "typings": "dist/exports.d.ts",
+  "directories": {
+    "doc": "docs"
+  },
+  "engines": {
+    "node": ">=10.12.0"
+  },
+  "scripts": {
+    "start": "node --max_old_space_size=4096 ./dist/main.js",
+    "debug": "node --max_old_space_size=4096 --inspect-brk ./dist/main.js",
+    "eslint-fix": "eslint  . --fix --ext .ts",
+    "eslint": "eslint  . --ext .ts",
+    "build": "tsc -p .",
+    "watch": "tsc -p . --watch",
+    "prepare": "npm run build",
+    "test": "npm run build && mocha dist/test",
+    "clean": "ver > nul 2>&1 nul && npm run --silent clean-cmd || npm run --silent clean-bash",
+    "clean-cmd": "if exist dist rmdir /s /q dist && exit 0 || exit 0 ",
+    "clean-bash": "rm nul && rm -rf dist && exit 0 || exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Azure/autorest.powershell.git"
+  },
+  "keywords": [
+    "AutoRest",
+    "PowerShell",
+    "Cmdlet"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Azure/autorest.powershell/issues"
+  },
+  "homepage": "https://github.com/Azure/autorest.powershell#readme",
+  "readme": "https://github.com/Azure/autorest.powershell/blob/master/readme.md",
+  "devDependencies": {
+    "@microsoft.azure/autorest.testserver": "~2.9.3",
+    "@types/js-yaml": "~4.0.0",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "~14.14.20",
+    "@types/xmlbuilder": "0.0.34",
+    "@typescript-eslint/eslint-plugin": "^4.12.0",
+    "@typescript-eslint/parser": "^4.12.0",
+    "autorest": "~3.4.0",
+    "eslint": "^7.17.0",
+    "mocha": "^6.2.2",
+    "mocha-typescript": "1.1.17",
+    "typescript": "~4.4.2"
+  },
+  "dependencies": {
+    "@autorest/codemodel": "~4.17.0",
+    "@autorest/extension-base": "~3.3.1",
+    "@azure-tools/async-io": "~3.0.0",
+    "@azure-tools/codegen": "~2.7.0",
+    "@azure-tools/codegen-csharp": "~3.0.0",
+    "@azure-tools/codemodel-v3": "~3.1.0",
+    "@azure-tools/linq": "~3.1.0",
+    "@azure-tools/tasks": "~3.0.0",
+    "js-yaml": "~4.0.0",
+    "source-map-support": "^0.5.19",
+    "xmlbuilder": "10.1.1"
+  }
+}

@@ -152,6 +152,12 @@
       "projectFolder": "packages/extensions/cadl",
       "reviewCategory": "production",
       "shouldPublish": true
+    },
+    {
+      "packageName": "@autorest/powershell",
+      "projectFolder": "packages/extensions/powershell",
+      "reviewCategory": "production",
+      "shouldPublish": true
     }
   ]
 }

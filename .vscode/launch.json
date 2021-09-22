@@ -28,19 +28,14 @@
       "protocol": "inspector",
       "request": "launch",
       "name": "run autorest",
-      "program": "${workspaceRoot}/autorest/dist/app.js",
+      "program": "${workspaceRoot}/packages/apps/autorest/entrypoints/app.js",
       "args": [
-        "--version=${workspaceRoot}/core",
-        "--use=c:/work/2019/autorest.modeler",
-        "--verbose",
-        "--debug",
-        "--output-folder=./new",
-        "--csharp",
-        "--modeler.debugger",
-        "--interactive",
-        "--simple-tree-shake"
+        "--module-version:1.7.0",
+        "--service-name:Users",
+        "C:/code/msgraph-sdk-powershell-upstream/src/Users/Users/readme.md",
+        "--verbose"
       ],
-      "cwd": "C:/work/2019/test-generator/tmp/azure-rest-api-specs/specification/appconfiguration/resource-manager"
+      "cwd": "C:/code/msgraph-sdk-powershell-upstream"
     },
     {
       "type": "node",
