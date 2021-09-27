@@ -21,9 +21,9 @@
     {
       "type": "shell",
       "command": "rush",
-      "label": "watch",
+      "label": "build",
       "args": [
-        "watch"
+        "build"
       ],
       "group": {
         "kind": "build",

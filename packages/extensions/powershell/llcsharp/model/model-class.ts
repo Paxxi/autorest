@@ -368,8 +368,8 @@ export class ModelClass extends Class implements EnhancedTypeDeclaration {
         const vp = this.add(
           new Property(virtualProperty.name, propertyType, {
             description: virtualProperty.property.language.csharp?.description,
-            get: toExpression(""),
-            set: toExpression(""), // (virtualProperty.property.language.csharp?.readOnly || virtualProperty.property.language.csharp?.constantValue) ? undefined : toExpression(`(${parentCast}${parentField.field.name}).${this.accessor(virtualProperty)} = value ${virtualProperty.required ? '' : ` ?? ${requiredPropertyType.defaultOfType}`}`)
+            get: '', //toExpression(""),
+            set: '', //toExpression(""), // (virtualProperty.property.language.csharp?.readOnly || virtualProperty.property.language.csharp?.constantValue) ? undefined : toExpression(`(${parentCast}${parentField.field.name}).${this.accessor(virtualProperty)} = value ${virtualProperty.required ? '' : ` ?? ${requiredPropertyType.defaultOfType}`}`)
           }),
         );
 

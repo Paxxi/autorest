@@ -158,6 +158,54 @@
       "projectFolder": "packages/extensions/powershell",
       "reviewCategory": "production",
       "shouldPublish": true
+    },
+    {
+      "packageName": "@azure-tools/tasks",
+      "projectFolder": "packages/perks/tasks",
+      "reviewCategory": "production",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@azure-tools/async-io",
+      "projectFolder": "packages/perks/async-io",
+      "reviewCategory": "production",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@azure-tools/eventing",
+      "projectFolder": "packages/perks/eventing",
+      "reviewCategory": "production",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@azure-tools/linq",
+      "projectFolder": "packages/perks/linq",
+      "reviewCategory": "production",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@azure-tools/uri",
+      "projectFolder": "packages/perks/uri",
+      "reviewCategory": "production",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@azure-tools/codemodel-v3",
+      "projectFolder": "packages/perks/codemodel-v3",
+      "reviewCategory": "production",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@azure-tools/codegen-csharp",
+      "projectFolder": "packages/perks/codegen-csharp",
+      "reviewCategory": "production",
+      "shouldPublish": true
+    },
+    {
+      "packageName": "@azure-tools/object-comparison",
+      "projectFolder": "packages/perks/object-comparison",
+      "reviewCategory": "production",
+      "shouldPublish": true
     }
   ]
 }

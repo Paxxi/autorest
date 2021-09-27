@@ -321,3 +321,5 @@ dist
 schema/
 Samples/
 core/test/resources/
+packages/extensions/powershell/
+packages/perks/

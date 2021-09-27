@@ -1,0 +1,52 @@
+{
+  "name": "@azure-tools/codegen-csharp",
+  "version": "3.0.264",
+  "description": "AutoRest code generator base classes for CSharp#",
+  "directories": {
+    "doc": "docs"
+  },
+  "main": "dist/exports.js",
+  "typings": "dist/exports.d.ts",
+  "scripts": {
+    "build": "tsc -p .",
+    "watch": "tsc -p . --watch",
+    "eslint-fix": "eslint  . --fix --ext .ts",
+    "eslint": "^7.17.0",
+    "prepare": "npm run build",
+    "test": "echo codegen-csharp: No Tests.",
+    "test:ci": "echo codegen-csharp: No Tests.",
+    "clean": "ver > nul 2>&1 nul && npm run --silent clean-cmd || npm run --silent clean-bash",
+    "clean-cmd": "if exist dist rmdir /s /q dist && exit 0 || exit 0 ",
+    "clean-bash": "rm nul && rm -rf dist && exit 0 || exit 0"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/Azure/perks.git"
+  },
+  "keywords": [
+    "AutoRest",
+    "codegen"
+  ],
+  "author": "",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/Azure/perks/issues"
+  },
+  "homepage": "https://github.com/Azure/perks/tree/master/codegen-csharp#readme",
+  "readme": "https://github.com/Azure/perks/tree/master/codegen-csharp/readme.md",
+  "devDependencies": {
+    "@types/js-yaml": "~4.0.0",
+    "@types/mocha": "^5.2.7",
+    "@types/node": "~14.14.20",
+    "mocha": "^6.2.2",
+    "mocha-typescript": "1.1.17",
+    "@typescript-eslint/eslint-plugin": "^4.12.0",
+    "@typescript-eslint/parser": "^4.12.0",
+    "eslint": "^7.17.0",
+    "typescript": "~4.4.2"
+  },
+  "dependencies": {
+    "@azure-tools/codegen": "~2.7.0",
+    "@azure-tools/linq": "~3.1.0"
+  }
+}

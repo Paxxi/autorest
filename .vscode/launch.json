@@ -32,10 +32,10 @@
       "args": [
         "--module-version:1.7.0",
         "--service-name:Users",
-        "C:/code/msgraph-sdk-powershell-upstream/src/Users/Users/readme.md",
+        "C:/code/msgraph-sdk-powershell/src/Users/readme.md",
         "--verbose"
       ],
-      "cwd": "C:/code/msgraph-sdk-powershell-upstream"
+      "cwd": "C:/code/msgraph-sdk-powershell"
     },
     {
       "type": "node",

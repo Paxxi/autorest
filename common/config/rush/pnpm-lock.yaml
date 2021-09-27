@@ -1,37 +1,37 @@
 dependencies:
-  '@azure-tools/async-io': 3.0.254
-  '@azure-tools/codegen-csharp': 3.0.264
-  '@azure-tools/codemodel-v3': 3.1.266
-  '@azure-tools/eventing': 3.0.253
-  '@azure-tools/linq': 3.1.263
-  '@azure-tools/object-comparison': 3.0.253
-  '@azure-tools/tasks': 3.0.255
-  '@azure-tools/uri': 3.1.1
   '@azure/logger': 1.0.2
   '@cadl-lang/compiler': 0.19.0
   '@microsoft.azure/autorest.testserver': 2.9.9
+  '@rush-temp/async-io': file:projects/async-io.tgz
   '@rush-temp/autorest': file:projects/autorest.tgz_ts-node@9.1.1
   '@rush-temp/cadl': file:projects/cadl.tgz_ts-node@9.1.1+webpack@5.40.0
   '@rush-temp/codegen': file:projects/codegen.tgz_prettier@2.3.2+ts-node@9.1.1
+  '@rush-temp/codegen-csharp': file:projects/codegen-csharp.tgz
   '@rush-temp/codemodel': file:projects/codemodel.tgz_prettier@2.3.2
+  '@rush-temp/codemodel-v3': file:projects/codemodel-v3.tgz
   '@rush-temp/common': file:projects/common.tgz_prettier@2.3.2+ts-node@9.1.1
   '@rush-temp/compare': file:projects/compare.tgz_prettier@2.3.2
   '@rush-temp/configuration': file:projects/configuration.tgz_prettier@2.3.2+ts-node@9.1.1
   '@rush-temp/core': file:projects/core.tgz_ts-node@9.1.1
   '@rush-temp/datastore': file:projects/datastore.tgz_prettier@2.3.2+ts-node@9.1.1
   '@rush-temp/deduplication': file:projects/deduplication.tgz_prettier@2.3.2+ts-node@9.1.1
+  '@rush-temp/eventing': file:projects/eventing.tgz
   '@rush-temp/extension': file:projects/extension.tgz_prettier@2.3.2+ts-node@9.1.1
   '@rush-temp/extension-base': file:projects/extension-base.tgz_prettier@2.3.2
   '@rush-temp/json': file:projects/json.tgz_prettier@2.3.2+ts-node@9.1.1
   '@rush-temp/jsonschema': file:projects/jsonschema.tgz_prettier@2.3.2+ts-node@9.1.1
+  '@rush-temp/linq': file:projects/linq.tgz
   '@rush-temp/md-mock-api': file:projects/md-mock-api.tgz_ts-node@9.1.1
   '@rush-temp/modelerfour': file:projects/modelerfour.tgz_ts-node@9.1.1
   '@rush-temp/oai2-to-oai3': file:projects/oai2-to-oai3.tgz_prettier@2.3.2+ts-node@9.1.1
+  '@rush-temp/object-comparison': file:projects/object-comparison.tgz
   '@rush-temp/openapi': file:projects/openapi.tgz_prettier@2.3.2+ts-node@9.1.1
   '@rush-temp/powershell': file:projects/powershell.tgz
   '@rush-temp/schemas': file:projects/schemas.tgz
+  '@rush-temp/tasks': file:projects/tasks.tgz
   '@rush-temp/test-public-packages': file:projects/test-public-packages.tgz_prettier@2.3.2
   '@rush-temp/test-utils': file:projects/test-utils.tgz_prettier@2.3.2+ts-node@9.1.1
+  '@rush-temp/uri': file:projects/uri.tgz_ts-node@9.1.1
   '@rush-temp/yaml': file:projects/yaml.tgz_prettier@2.3.2+ts-node@9.1.1
   '@types/body-parser': 1.19.1
   '@types/command-exists': 1.2.0
@@ -53,6 +53,7 @@ dependencies:
   '@types/semver': 5.5.0
   '@types/source-map-support': 0.5.4
   '@types/supertest': 2.0.11
+  '@types/urijs': 1.19.17
   '@types/webpack': 4.41.30
   '@types/xmlbuilder': 0.0.34
   '@types/yargs': 15.0.14
@@ -78,6 +79,8 @@ dependencies:
   eslint-plugin-unicorn: 33.0.1_eslint@7.32.0
   expect: 26.6.2
   express: 4.17.1
+  file-url: 3.0.0
+  get-uri: 3.0.2
   glob: 7.1.7
   jest: 27.1.1_ts-node@9.1.1
   jest-snapshot: 26.6.2
@@ -94,6 +97,7 @@ dependencies:
   npm-package-arg: 8.1.5
   pacote: 9.2.3
   prettier: 2.3.2
+  proper-lockfile: 2.0.1
   recursive-diff: 1.0.8
   rimraf: 3.0.2
   safe-buffer: 5.2.0
@@ -112,6 +116,7 @@ dependencies:
   typescript: 4.4.2
   typescript-json-schema: 0.40.0
   untildify: 4.0.0
+  urijs: 1.19.7
   vscode-jsonrpc: 3.6.2
   vscode-languageserver: 3.5.1
   webpack: 5.40.0_webpack-cli@4.7.2
@@ -1267,6 +1272,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-O3MmRAk6ZuAKa9CHgg0Pr0+lUOqoMLpc9AS4R8ano2auvsg7IE8syF3Xh/NPr26TWklxYcqoEEFdzLLs1fV9PQ==
+  /@types/urijs/1.19.17:
+    dev: false
+    resolution:
+      integrity: sha512-ShIlp+8iNGo/yVVfYFoNRqUiaE9wMCzsSl85qTg2/C5l56BTJokU7QeMgVBQ9xhcyhWQP0zGXPBZPPvEG/sRmQ==
   /@types/webpack-sources/3.2.0:
     dependencies:
       '@types/node': 14.14.45
@@ -10329,6 +10338,23 @@ packages:
       node: '>=10'
     resolution:
       integrity: sha512-rVksvsnNCdJ/ohGc6xgPwyN8eheCxsiLM8mxuE/t/mOVqJewPuO1miLpTHQiRgTKCLexL4MeAFVagts7HmNZ2Q==
+  file:projects/async-io.tgz:
+    dependencies:
+      '@types/mocha': 5.2.7
+      '@types/node': 14.14.45
+      '@typescript-eslint/eslint-plugin': 4.31.0_a690ff3776b01e92cf0b93501bb5ae6a
+      '@typescript-eslint/parser': 4.31.0_eslint@7.32.0+typescript@4.4.2
+      eslint: 7.32.0
+      mocha: 6.2.3
+      mocha-typescript: 1.1.17
+      proper-lockfile: 2.0.1
+      typescript: 4.4.2
+    dev: false
+    name: '@rush-temp/async-io'
+    resolution:
+      integrity: sha512-iuaY3wg/ujMa95a7sirkktU9ZFzywfHH2HODQ1guT26H3SCy76eZwQ27cTgoS+WMiYyc9F++/WZ/l88O1jbzBg==
+      tarball: file:projects/async-io.tgz
+    version: 0.0.0
   file:projects/autorest.tgz_ts-node@9.1.1:
     dependencies:
       '@azure-tools/async-io': 3.0.254
@@ -10370,7 +10396,7 @@ packages:
     peerDependencies:
       ts-node: '*'
     resolution:
-      integrity: sha512-DABUvpzHusFEZDJnKX2Mf4V4Xo329Z/5uxgvGWfT5m+nhL3KTmDc5mRriKyHEcQEHBXMN1br0qn/8uZ8Cx+CVQ==
+      integrity: sha512-yvRx2mGtTMUEq06j2hbEgKlIVThJGjERHMQvScWQXH5Od8cVCXWwZlnR+vt5R134bmg5/AZ5Bfv7XiA7u6TrcQ==
       tarball: file:projects/autorest.tgz
     version: 0.0.0
   file:projects/cadl.tgz_ts-node@9.1.1+webpack@5.40.0:
@@ -10408,6 +10434,23 @@ packages:
       integrity: sha512-vxvPXgPJTt0yrvFH5oFumu7Ivqdtw4hww5d7nSoy6ICTnPdoZSVK6Pa4Zbpin1+9fpBZAMIu+SBxBfcYZfbPZQ==
       tarball: file:projects/cadl.tgz
     version: 0.0.0
+  file:projects/codegen-csharp.tgz:
+    dependencies:
+      '@types/js-yaml': 4.0.3
+      '@types/mocha': 5.2.7
+      '@types/node': 14.14.45
+      '@typescript-eslint/eslint-plugin': 4.31.0_a690ff3776b01e92cf0b93501bb5ae6a
+      '@typescript-eslint/parser': 4.31.0_eslint@7.32.0+typescript@4.4.2
+      eslint: 7.32.0
+      mocha: 6.2.3
+      mocha-typescript: 1.1.17
+      typescript: 4.4.2
+    dev: false
+    name: '@rush-temp/codegen-csharp'
+    resolution:
+      integrity: sha512-lAKSHFYXsV49CuPdG7K8vL6gbFjpQ8NyoDwFbqGtyGTcfCGmTmzMplkIK+dn7Zx7E58cPWcowGfwYf7IwAs3DA==
+      tarball: file:projects/codegen-csharp.tgz
+    version: 0.0.0
   file:projects/codegen.tgz_prettier@2.3.2+ts-node@9.1.1:
     dependencies:
       '@azure-tools/async-io': 3.0.254
@@ -10437,8 +10480,25 @@ packages:
       prettier: '*'
       ts-node: '*'
     resolution:
-      integrity: sha512-G+bprtkqcXKoat2JELN9SYYHCsBAUhYXxUoW+4hOoxParpLTnw2xX4pt60VBE8jrfyisZrclXX9CYj21ufNzsQ==
+      integrity: sha512-/m3iAWqlKGNnbsbeU/6xLGHKzyuHoyZuGgisjcWIyq+gTUEr83Iygm+Mo98N7Md1dhbdyDrx+z5cHT5ZaIIG4g==
       tarball: file:projects/codegen.tgz
+    version: 0.0.0
+  file:projects/codemodel-v3.tgz:
+    dependencies:
+      '@types/js-yaml': 4.0.3
+      '@types/mocha': 5.2.7
+      '@types/node': 14.14.45
+      '@typescript-eslint/eslint-plugin': 4.31.0_a690ff3776b01e92cf0b93501bb5ae6a
+      '@typescript-eslint/parser': 4.31.0_eslint@7.32.0+typescript@4.4.2
+      eslint: 7.32.0
+      mocha: 6.2.3
+      mocha-typescript: 1.1.17
+      typescript: 4.4.2
+    dev: false
+    name: '@rush-temp/codemodel-v3'
+    resolution:
+      integrity: sha512-DovNiWuA4VMpDxQeAwQYI0tEo2NHHV4NTPExtf3hoTaRB80X3N6N0vSaWT+dJ+QZsvCcPFisuazzgYl1kkj5mg==
+      tarball: file:projects/codemodel-v3.tgz
     version: 0.0.0
   file:projects/codemodel.tgz_prettier@2.3.2:
     dependencies:
@@ -10559,7 +10619,7 @@ packages:
       prettier: '*'
       ts-node: '*'
     resolution:
-      integrity: sha512-ixI+T6Q45pf5aZy9px0d/Zr73UMZ5GUYNQ6G/I3tLTagI9we6rcaRUefSHk66xiO0KrMrXK3njM7rFMLJfmCxw==
+      integrity: sha512-Z/PuUitjWRl1Rp28RTQYG+uADkBzKIRlL0w1RqAAYkusT58PhtKvykeeLZXiGQCx5BIMlZEBIPVD1/2jLwW3PA==
       tarball: file:projects/configuration.tgz
     version: 0.0.0
   file:projects/core.tgz_ts-node@9.1.1:
@@ -10613,7 +10673,7 @@ packages:
     peerDependencies:
       ts-node: '*'
     resolution:
-      integrity: sha512-4L1BSNJ7Vd/ysrblvTz3pumJucafvZZu0mkkRaGhNPLBzKxBMNJisKTSxirXr7rNcAcLRVCXLcKNnQ/4llMN5A==
+      integrity: sha512-LuPy6YWoaDz+GHx10MnSEHPtZb//qeMKn+uAIracebjVuETmYQalpykme06oFF2ZBO18aMGneXUVYcL33cBRpw==
       tarball: file:projects/core.tgz
     version: 0.0.0
   file:projects/datastore.tgz_prettier@2.3.2+ts-node@9.1.1:
@@ -10647,7 +10707,7 @@ packages:
       prettier: '*'
       ts-node: '*'
     resolution:
-      integrity: sha512-TbjyFxINESWXHSXfu724HtdQcUEkL3/X4TkOPQCGlF4KXsegpg4t33Ji6qLmXA3amutFwS+7gqXnZX05KdEJKQ==
+      integrity: sha512-9P93BAdLe5NZDOfmf4Y3a07qdOnQEpx/jPOC3ljwk5bepZyNXq+ie5qOYAK7Vswy3uZnw9jBBBGHq+Htf700gw==
       tarball: file:projects/datastore.tgz
     version: 0.0.0
   file:projects/deduplication.tgz_prettier@2.3.2+ts-node@9.1.1:
@@ -10677,8 +10737,24 @@ packages:
       prettier: '*'
       ts-node: '*'
     resolution:
-      integrity: sha512-MYQ8DPYd8PRILUdoR1N+jrLvOJuM3W8wm2AK3xez8Z1Y2UyV/bYNhaww9aYB/q5BwXMl6c0x19sOKacKGm3ybw==
+      integrity: sha512-e+QGmUkfJOejSSulKSvum82fW8Y797sESRz6MeAFZx9t9j9EOGvzMfud5wLgNT1frfphaZR1mzlgkZqBkyCgow==
       tarball: file:projects/deduplication.tgz
+    version: 0.0.0
+  file:projects/eventing.tgz:
+    dependencies:
+      '@types/mocha': 5.2.7
+      '@types/node': 14.14.45
+      '@typescript-eslint/eslint-plugin': 4.31.0_a690ff3776b01e92cf0b93501bb5ae6a
+      '@typescript-eslint/parser': 4.31.0_eslint@7.32.0+typescript@4.4.2
+      eslint: 7.32.0
+      mocha: 6.2.3
+      mocha-typescript: 1.1.17
+      typescript: 4.4.2
+    dev: false
+    name: '@rush-temp/eventing'
+    resolution:
+      integrity: sha512-wf0Gdw07UzwhgOATz8sWvEM5VgO7YOClhUqupdc/V97eJ06ND94a8lnSU9jHOpW8Q8H/GTcG/lib0MwEm6dpLA==
+      tarball: file:projects/eventing.tgz
     version: 0.0.0
   file:projects/extension-base.tgz_prettier@2.3.2:
     dependencies:
@@ -10746,7 +10822,7 @@ packages:
       prettier: '*'
       ts-node: '*'
     resolution:
-      integrity: sha512-tM8yL4UBOkGwtoyj20dlyq6p4cFJEUrKuuLYrYYi1rGez00HbIXx8auCniJw8OZuQuQ4XpxZhY6utHYaPFPFaA==
+      integrity: sha512-1+wA3Po/AhH9ZxbxZ4w1uvQ8LKiHt0TJpJLNnc4SFsLmZ6c1IlplTZk3MRVsM9ShriH4AdnwadQxsZD2eAIcBw==
       tarball: file:projects/extension.tgz
     version: 0.0.0
   file:projects/json.tgz_prettier@2.3.2+ts-node@9.1.1:
@@ -10798,6 +10874,22 @@ packages:
     resolution:
       integrity: sha512-kgtrGG31uiTPbggfjxnjD+L2NmhfQcTP9yv5EB9RHWstL1ATAsNZps2x9H91A0OeAAopJLZ5KqKobI0rNcs4gA==
       tarball: file:projects/jsonschema.tgz
+    version: 0.0.0
+  file:projects/linq.tgz:
+    dependencies:
+      '@types/mocha': 5.2.7
+      '@types/node': 14.14.45
+      '@typescript-eslint/eslint-plugin': 4.31.0_a690ff3776b01e92cf0b93501bb5ae6a
+      '@typescript-eslint/parser': 4.31.0_eslint@7.32.0+typescript@4.4.2
+      eslint: 7.32.0
+      mocha: 6.2.3
+      mocha-typescript: 1.1.17
+      typescript: 4.4.2
+    dev: false
+    name: '@rush-temp/linq'
+    resolution:
+      integrity: sha512-ImeT7nrpjiPSCWUtbx0rTLYxuFdQuZmB6DccID74LX28PSmqYn2pVgIb6wJCvxyVVQvQ4MFYxJ7VSCi+7sc9fA==
+      tarball: file:projects/linq.tgz
     version: 0.0.0
   file:projects/md-mock-api.tgz_ts-node@9.1.1:
     dependencies:
@@ -10880,7 +10972,7 @@ packages:
     peerDependencies:
       ts-node: '*'
     resolution:
-      integrity: sha512-T/lhdQdhW3dDTLx/hKUeJqxeXIMlQu1ND+DLUwsXY3lc/NRnP6rC5V+1RGTMjiMUuzb6VnaCkJWw5HwOzUfMsQ==
+      integrity: sha512-7bl5BV+dhDPnHDcF9wIclvjY+1t3xXM5/DKDED7RCLx2x+Lr0EdAVqkbCFvtGf3tv415U3obuUG4649znZTQng==
       tarball: file:projects/modelerfour.tgz
     version: 0.0.0
   file:projects/oai2-to-oai3.tgz_prettier@2.3.2+ts-node@9.1.1:
@@ -10911,6 +11003,22 @@ packages:
     resolution:
       integrity: sha512-6YP89sECKf2MF6e9cl8NYvhXIU8OeEi6NW5G61thiZzmB8mwOulJ2yNraLs8S150feF4nWbJtfJu1CvMi0iIPg==
       tarball: file:projects/oai2-to-oai3.tgz
+    version: 0.0.0
+  file:projects/object-comparison.tgz:
+    dependencies:
+      '@types/mocha': 5.2.7
+      '@types/node': 14.14.45
+      '@typescript-eslint/eslint-plugin': 4.31.0_a690ff3776b01e92cf0b93501bb5ae6a
+      '@typescript-eslint/parser': 4.31.0_eslint@7.32.0+typescript@4.4.2
+      eslint: 7.32.0
+      mocha: 6.2.3
+      mocha-typescript: 1.1.17
+      typescript: 4.4.2
+    dev: false
+    name: '@rush-temp/object-comparison'
+    resolution:
+      integrity: sha512-BQrGPqrZgNpw6ODKetK4jvxgT3yW/H7qIV4jV2d2x/D7YI157cDFkX/MdcClxAbS7ECp9RhgSXGyrJsIFXv4+w==
+      tarball: file:projects/object-comparison.tgz
     version: 0.0.0
   file:projects/openapi.tgz_prettier@2.3.2+ts-node@9.1.1:
     dependencies:
@@ -10946,6 +11054,7 @@ packages:
       '@azure-tools/tasks': 3.0.255
       '@microsoft.azure/autorest.testserver': 2.9.9
       '@types/js-yaml': 4.0.3
+      '@types/lodash': 4.14.172
       '@types/mocha': 5.2.7
       '@types/node': 14.14.45
       '@types/xmlbuilder': 0.0.34
@@ -10953,6 +11062,7 @@ packages:
       '@typescript-eslint/parser': 4.31.0_eslint@7.32.0+typescript@4.4.2
       eslint: 7.32.0
       js-yaml: 4.0.0
+      lodash: 4.17.21
       mocha: 6.2.3
       mocha-typescript: 1.1.17
       source-map-support: 0.5.19
@@ -10961,7 +11071,7 @@ packages:
     dev: false
     name: '@rush-temp/powershell'
     resolution:
-      integrity: sha512-ewacKincwADZHz2RZ0J6lDbMFRqtIsCC1xYxZusCaTWUya6TnRbAUc73lsQJ76jteDhJQJCJgEynV6N2TYndNQ==
+      integrity: sha512-Qfh5offEwtBhL1e5v/qQ+yD5340So6nP+49MPXaicFyxIofCNhcV9aJkaBXSck9/wUQBHt4NQ8lG7YEhXsiiGA==
       tarball: file:projects/powershell.tgz
     version: 0.0.0
   file:projects/schemas.tgz:
@@ -10970,6 +11080,23 @@ packages:
     resolution:
       integrity: sha512-R4SNYE56Q0TOMYcT8gSTZIInxE9vVJH1k54SR8Ksvg8HNkzG+Pko1NIxb8zpWFB74VEmx3TDaruHnodgJjUrvQ==
       tarball: file:projects/schemas.tgz
+    version: 0.0.0
+  file:projects/tasks.tgz:
+    dependencies:
+      '@types/mocha': 5.2.7
+      '@types/node': 14.14.45
+      '@typescript-eslint/eslint-plugin': 4.31.0_a690ff3776b01e92cf0b93501bb5ae6a
+      '@typescript-eslint/parser': 4.31.0_eslint@7.32.0+typescript@4.4.2
+      eslint: 7.32.0
+      mocha: 6.2.3
+      mocha-typescript: 1.1.17
+      source-map-support: 0.5.19
+      typescript: 4.4.2
+    dev: false
+    name: '@rush-temp/tasks'
+    resolution:
+      integrity: sha512-XwdJpmv9LCHW9Gm96VNjhqnpgyFUbzOy1NVTVp2Fw+phXP1tMzVisoKpJUzG3+JY6lbGu9rF07cIt9eP4cAhAQ==
+      tarball: file:projects/tasks.tgz
     version: 0.0.0
   file:projects/test-public-packages.tgz_prettier@2.3.2:
     dependencies:
@@ -11009,8 +11136,36 @@ packages:
       prettier: '*'
       ts-node: '*'
     resolution:
-      integrity: sha512-KgD9TLvgY49dTKkpIcjQwxn6z0efwqwj6COGl/8yOsQxDA5neMoBwaBtHm6edMOv5yLgnX9gd4CtYeP8Bzw2uA==
+      integrity: sha512-SLbxMRmoYYYij5b6aqDKwS3vK3/FccKH18nXhj8dlNbGxzkfGvD3jEt2UpQFr8pdKKzJCB+yMadO8DDoT+koYA==
       tarball: file:projects/test-utils.tgz
+    version: 0.0.0
+  file:projects/uri.tgz_ts-node@9.1.1:
+    dependencies:
+      '@types/jest': 26.0.24
+      '@types/node': 14.14.45
+      '@types/urijs': 1.19.17
+      '@typescript-eslint/eslint-plugin': 4.31.0_a690ff3776b01e92cf0b93501bb5ae6a
+      '@typescript-eslint/parser': 4.31.0_eslint@7.32.0+typescript@4.4.2
+      eslint: 7.32.0
+      eslint-plugin-node: 11.1.0_eslint@7.32.0
+      eslint-plugin-prettier: 3.4.1_eslint@7.32.0+prettier@2.3.2
+      eslint-plugin-unicorn: 33.0.1_eslint@7.32.0
+      file-url: 3.0.0
+      get-uri: 3.0.2
+      jest: 27.1.1_ts-node@9.1.1
+      prettier: 2.3.2
+      rimraf: 3.0.2
+      ts-jest: 27.0.5_b0de3831a3508d250bf516b99371e877
+      typescript: 4.4.2
+      urijs: 1.19.7
+    dev: false
+    id: file:projects/uri.tgz
+    name: '@rush-temp/uri'
+    peerDependencies:
+      ts-node: '*'
+    resolution:
+      integrity: sha512-HmbWW0A2aTIs22MeErR+f20EksZESjM6AwwZLqDwXceDlzfmWTvHGzHZXiirbRT8ObyFb4rZKs2oethCLDRtiw==
+      tarball: file:projects/uri.tgz
     version: 0.0.0
   file:projects/yaml.tgz_prettier@2.3.2+ts-node@9.1.1:
     dependencies:
@@ -11044,39 +11199,39 @@ packages:
     version: 0.0.0
 registry: ''
 specifiers:
-  '@azure-tools/async-io': ~3.0.0
-  '@azure-tools/codegen-csharp': ~3.0.0
-  '@azure-tools/codemodel-v3': ~3.1.0
-  '@azure-tools/eventing': ~3.0.0
-  '@azure-tools/linq': ~3.1.0
-  '@azure-tools/object-comparison': ~3.0.0
-  '@azure-tools/tasks': ~3.0.0
-  '@azure-tools/uri': ~3.1.1
   '@azure/logger': ^1.0.2
   '@cadl-lang/compiler': '~0.19.0 '
   '@microsoft.azure/autorest.testserver': ~2.9.3
+  '@rush-temp/async-io': file:./projects/async-io.tgz
   '@rush-temp/autorest': file:./projects/autorest.tgz
   '@rush-temp/cadl': file:./projects/cadl.tgz
   '@rush-temp/codegen': file:./projects/codegen.tgz
+  '@rush-temp/codegen-csharp': file:./projects/codegen-csharp.tgz
   '@rush-temp/codemodel': file:./projects/codemodel.tgz
+  '@rush-temp/codemodel-v3': file:./projects/codemodel-v3.tgz
   '@rush-temp/common': file:./projects/common.tgz
   '@rush-temp/compare': file:./projects/compare.tgz
   '@rush-temp/configuration': file:./projects/configuration.tgz
   '@rush-temp/core': file:./projects/core.tgz
   '@rush-temp/datastore': file:./projects/datastore.tgz
   '@rush-temp/deduplication': file:./projects/deduplication.tgz
+  '@rush-temp/eventing': file:./projects/eventing.tgz
   '@rush-temp/extension': file:./projects/extension.tgz
   '@rush-temp/extension-base': file:./projects/extension-base.tgz
   '@rush-temp/json': file:./projects/json.tgz
   '@rush-temp/jsonschema': file:./projects/jsonschema.tgz
+  '@rush-temp/linq': file:./projects/linq.tgz
   '@rush-temp/md-mock-api': file:./projects/md-mock-api.tgz
   '@rush-temp/modelerfour': file:./projects/modelerfour.tgz
   '@rush-temp/oai2-to-oai3': file:./projects/oai2-to-oai3.tgz
+  '@rush-temp/object-comparison': file:./projects/object-comparison.tgz
   '@rush-temp/openapi': file:./projects/openapi.tgz
   '@rush-temp/powershell': file:./projects/powershell.tgz
   '@rush-temp/schemas': file:./projects/schemas.tgz
+  '@rush-temp/tasks': file:./projects/tasks.tgz
   '@rush-temp/test-public-packages': file:./projects/test-public-packages.tgz
   '@rush-temp/test-utils': file:./projects/test-utils.tgz
+  '@rush-temp/uri': file:./projects/uri.tgz
   '@rush-temp/yaml': file:./projects/yaml.tgz
   '@types/body-parser': ^1.19.0
   '@types/command-exists': ~1.2.0
@@ -11098,6 +11253,7 @@ specifiers:
   '@types/semver': 5.5.0
   '@types/source-map-support': ^0.5.3
   '@types/supertest': ^2.0.10
+  '@types/urijs': ~1.19.14
   '@types/webpack': ~4.41.26
   '@types/xmlbuilder': 0.0.34
   '@types/yargs': ~15.0.12
@@ -11123,6 +11279,8 @@ specifiers:
   eslint-plugin-unicorn: ~33.0.1
   expect: ~26.6.2
   express: ~4.17.1
+  file-url: 3.0.0
+  get-uri: ~3.0.2
   glob: ~7.1.4
   jest: ^27.0.4
   jest-snapshot: ~26.6.2
@@ -11139,6 +11297,7 @@ specifiers:
   npm-package-arg: ^8.1.0
   pacote: 9.2.3
   prettier: ~2.3.1
+  proper-lockfile: ~2.0.1
   recursive-diff: ~1.0.6
   rimraf: ^3.0.2
   safe-buffer: 5.2.0
@@ -11157,6 +11316,7 @@ specifiers:
   typescript: ~4.4.2
   typescript-json-schema: ~0.40.0
   untildify: ^4.0.0
+  urijs: ~1.19.1
   vscode-jsonrpc: ^3.5.0
   vscode-languageserver: 3.5.1
   webpack: ~5.40.0

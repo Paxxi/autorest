@@ -89,6 +89,7 @@ export class Project extends codeDomProject {
   public addToString!: boolean;
   public license!: string;
   public cmdletFolder!: string;
+  public modelFolder!: string;
   public modelCmdletFolder!: string;
   public endpointResourceIdKeyName!: string;
   public endpointSuffixKeyName!: string;
@@ -213,6 +214,7 @@ export class Project extends codeDomProject {
     this.baseFolder = await this.state.getValue('current-folder');
     this.moduleFolder = await this.state.getValue('module-folder');
     this.cmdletFolder = await this.state.getValue('cmdlet-folder');
+    this.modelFolder = await this.state.getValue('model-folder');
     this.modelCmdletFolder = await this.state.getValue('model-cmdlet-folder');
 
     this.customFolder = await this.state.getValue('custom-cmdlet-folder');

@@ -3,22 +3,20 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Schema as NewSchema, SchemaType, ArraySchema, SchemaResponse, HttpParameter, ObjectSchema, BinaryResponse, DictionarySchema, ChoiceSchema, SealedChoiceSchema } from '@autorest/codemodel';
-import { command, getAllProperties, JsonType, http, getAllPublicVirtualProperties, getVirtualPropertyFromPropertyName, ParameterLocation, getAllVirtualProperties, VirtualParameter, VirtualProperty } from '@azure-tools/codemodel-v3';
+import { Schema as NewSchema, SchemaType, SchemaResponse, HttpParameter, ObjectSchema, BinaryResponse, DictionarySchema, ChoiceSchema, SealedChoiceSchema, BooleanSchema } from '@autorest/codemodel';
+import { JsonType, getVirtualPropertyFromPropertyName, ParameterLocation, VirtualParameter } from '@azure-tools/codemodel-v3';
 import { CommandOperation, VirtualParameter as NewVirtualParameter } from '../utils/command-operation';
 import { getAllProperties as NewGetAllProperties, getAllPublicVirtualProperties as NewGetAllPublicVirtualProperties, getVirtualPropertyFromPropertyName as NewGetVirtualPropertyFromPropertyName, VirtualProperty as NewVirtualProperty } from '../utils/schema';
-import { escapeString, docComment, serialize, pascalCase, DeepPartial } from '@azure-tools/codegen';
+import { escapeString, docComment, pascalCase, DeepPartial } from '@azure-tools/codegen';
 import { items, values, Dictionary, length } from '@azure-tools/linq';
 import {
-  Access, Attribute, BackedProperty, Catch, Class, ClassType, Constructor, dotnet, Else, Expression, Finally, ForEach, If, LambdaProperty, LiteralExpression, LocalVariable, Method, Modifier, Namespace, OneOrMoreStatements, Parameter, Property, Return, Statements, BlockStatement, StringExpression,
-  Switch, System, TerminalCase, toExpression, Try, Using, valueOf, Field, IsNull, Or, ExpressionOrLiteral, TerminalDefaultCase, xmlize, TypeDeclaration, And, IsNotNull, PartialMethod, Case
-} from '@azure-tools/codegen-csharp';
-import { ClientRuntime, EventListener, Schema, ArrayOf, EnumImplementation } from '../llcsharp/exports';
-import { Alias, ArgumentCompleterAttribute, AsyncCommandRuntime, AsyncJob, CmdletAttribute, ErrorCategory, ErrorRecord, Events, InvocationInfo, OutputTypeAttribute, ParameterAttribute, PSCmdlet, PSCredential, SwitchParameter, ValidateNotNull, verbEnum, GeneratedAttribute, DescriptionAttribute, CategoryAttribute, ParameterCategory, ProfileAttribute, PSObject, InternalExportAttribute, ExportAsAttribute, DefaultRunspace, RunspaceFactory, AllowEmptyCollectionAttribute, DoNotExportAttribute } from '../internal/powershell-declarations';
+  Access, Attribute, BackedProperty, Catch, Class, dotnet, Else, Expression, Finally, ForEach, If, LiteralExpression, LocalVariable, Method, Modifier, Namespace, OneOrMoreStatements, Parameter, Property, Return, Statements, BlockStatement, StringExpression,
+  Switch, System, TerminalCase, toExpression, Try, Using, valueOf, Field, IsNull, Or, ExpressionOrLiteral, TerminalDefaultCase, xmlize, TypeDeclaration, And, IsNotNull, PartialMethod} from '@azure-tools/codegen-csharp';
+import { ClientRuntime, EventListener, ArrayOf, EnumImplementation, Boolean } from '../llcsharp/exports';
+import { Alias, ArgumentCompleterAttribute, AsyncCommandRuntime, AsyncJob, CmdletAttribute, ErrorCategory, ErrorRecord, Events, OutputTypeAttribute, ParameterAttribute, PSCmdlet, SwitchParameter, ValidateNotNull, verbEnum, GeneratedAttribute, DescriptionAttribute, CategoryAttribute, ParameterCategory, ProfileAttribute, InternalExportAttribute, ExportAsAttribute, DefaultRunspace, RunspaceFactory, AllowEmptyCollectionAttribute, DoNotExportAttribute } from '../internal/powershell-declarations';
 import { State } from '../internal/state';
 import { Channel } from '@autorest/extension-base';
-import { IParameter } from '@azure-tools/codemodel-v3/dist/code-model/components';
-import { IParameter as NewIParameter } from '../utils/components';
+import { IParameter, IParameter as NewIParameter } from '../utils/components';
 import { Variable, Local, ParameterModifier } from '@azure-tools/codegen-csharp';
 import { getVirtualPropertyName } from '../llcsharp/model/model-class';
 const PropertiesRequiringNew = new Set(['Host', 'Events']);
@@ -33,6 +31,17 @@ const Verbs = {
   Security: 'global::System.Management.Automation.VerbsSecurity',
   Other: 'global::System.Management.Automation.VerbsOther'
 };
+
+class StaticBoolean implements TypeDeclaration {
+  get declaration(): string {
+    return "bool";
+  }
+}
+class StaticString implements TypeDeclaration {
+  get declaration(): string {
+    return "string";
+  }
+}
 
 const category: { [verb: string]: string } = {
   'Add': Verbs.Common,
@@ -214,60 +223,6 @@ export function addDefaultInfo(targetProperty: Property, parameter: any) {
   }
 }
 
-export function addInfoAttribute(targetProperty: Property, pType: TypeDeclaration, isRequired: boolean, isReadOnly: boolean, description: string, serializedName: string) {
-
-  let pt = <any>pType;
-  while (pt.elementType) {
-    switch (pt.elementType.schema.type) {
-      case JsonType.Object:
-        if (pt.elementType.schema.details.csharp.interfaceImplementation) {
-          pt = {
-            declaration: pt.elementType.schema.details.csharp.interfaceImplementation.declaration,
-            schema: pt.elementType.schema,
-          };
-        } else {
-          // arg! it's not done yet. Hope it's not polymorphic itself.
-          pt = {
-            declaration: `${pt.elementType.schema.details.csharp.namespace}.${pt.elementType.schema.details.csharp.interfaceName}`,
-            schema: pt.elementType.schema,
-          };
-        }
-        break;
-
-      case JsonType.Array:
-        pt = pt.elementType;
-        break;
-
-      default:
-        pt = pt.elementType;
-        break;
-    }
-  }
-  const ptypes = new Array<string>();
-  if (pt.schema && pt.schema && pt.schema.details.csharp.byReference) {
-    ptypes.push(`typeof(${pt.schema.details.csharp.namespace}.${pt.schema.details.csharp.interfaceName}_Reference)`);
-    // do we need polymorphic types for by-resource ? Don't think so.
-  } else {
-    ptypes.push(`typeof(${pt.declaration})`);
-    if (pt.schema && pt.schema.details.csharp.classImplementation && pt.schema.details.csharp.classImplementation.discriminators) {
-      ptypes.push(...[...pt.schema.details.csharp.classImplementation.discriminators.values()].map(each => `typeof(${each.modelInterface.fullName})`));
-    }
-  }
-
-  targetProperty.add(new Attribute(ClientRuntime.InfoAttribute, {
-    parameters: [
-      new LiteralExpression(`\nRequired = ${isRequired}`),
-      new LiteralExpression(`\nReadOnly = ${isReadOnly}`),
-      new LiteralExpression(`\nDescription = ${new StringExpression(description).value}`),
-      new LiteralExpression(`\nSerializedName = ${new StringExpression(serializedName).value}`),
-      new LiteralExpression(`\nPossibleTypes = new [] { ${ptypes.join(',').replace(/\?/g, '').replace(/undefined\./g, '')} }`),
-    ]
-  }));
-
-
-}
-
-
 export function NewAddInfoAttribute(targetProperty: Property, pType: TypeDeclaration, isRequired: boolean, isReadOnly: boolean, description: string, serializedName: string) {
 
   let pt = <any>pType;
@@ -321,6 +276,58 @@ export function NewAddInfoAttribute(targetProperty: Property, pType: TypeDeclara
 
 }
 
+
+function isViaIdentity(operation: CommandOperation) {
+  return operation.details.csharp.name.indexOf("ViaIdentity") > 0;
+}
+
+  function getClassOutputType(operation: CommandOperation, state: State): string|null {
+    for (const httpOperation of values(operation.callGraph)) {
+      const pageableInfo = httpOperation.language.csharp?.pageable;
+      // Add this for binary response in m4
+      for (const schema of values(httpOperation.responses).selectNonNullable(each => (<SchemaResponse>each).schema)) {
+        const props = NewGetAllProperties(schema);
+
+        // does the target type just wrap a single output?
+        const resultSchema = length(props) !== 1 ? <NewSchema>schema : <NewSchema>props[0].schema;
+
+        // make sure return type for boolean stays boolean!
+        if (resultSchema.type === SchemaType.Boolean ||
+          (resultSchema.type === SchemaType.Choice && (<any>resultSchema).choiceType.type === SchemaType.Boolean && (<ChoiceSchema>resultSchema).choices.length === 1) ||
+          (resultSchema.type === SchemaType.SealedChoice && (<any>resultSchema).choiceType.type === SchemaType.Boolean && (<SealedChoiceSchema>resultSchema).choices.length === 1)) {
+        } else {
+          const typeDeclaration = state.project.schemaDefinitionResolver.resolveTypeDeclaration(resultSchema, true, state);
+
+          if (typeDeclaration.declaration === System.IO.Stream.declaration || typeDeclaration.declaration === dotnet.Binary.declaration) {
+            // if this is a stream, skip the output type.
+          } else {
+
+            let type = '';
+            if (typeDeclaration instanceof ArrayOf) {
+              type = typeDeclaration.elementTypeDeclaration;
+            } else if (pageableInfo && pageableInfo.responseType === 'pageable') {
+              if (typeDeclaration === undefined || (<ObjectSchema>typeDeclaration.schema).properties?.find(p => p.serializedName === pageableInfo.itemName) === undefined) {
+                //skip-for-time-being, since operationId does not support in m4 any more
+                //throw new Error(`\n\nOn operation:\n  '${httpOperation.operationId}' at '${httpOperation.path}'\n  -- you have used 'x-ms-pageable' and there is no property name '${pageableInfo.itemName}' that is an array.\n\n`);
+                throw new Error('An error needs to be more specific');
+              }
+              const nestedSchema = (<ObjectSchema>typeDeclaration.schema).properties?.find(p => p.serializedName === pageableInfo.itemName)?.schema;
+              const nestedTypeDeclaration = state.project.schemaDefinitionResolver.resolveTypeDeclaration(nestedSchema, true, state);
+              type = (<ArrayOf>nestedTypeDeclaration).elementTypeDeclaration;
+            } else {
+              type = typeDeclaration.declaration;
+            }
+            // check if this is a stream output
+            if (type) {
+              return type;
+            }
+          }
+        }
+      }
+    }
+    return null;
+  }
+
 export class CmdletClass extends Class {
   private cancellationToken!: Expression;
   public state: State;
@@ -335,32 +342,30 @@ export class CmdletClass extends Class {
   private bodyParameterInfo?: { type: TypeDeclaration; valueType: TypeDeclaration };
   private apProp?: Property;
   private operation: CommandOperation;
+  private operations: CommandOperation[];
   private debugMode?: boolean;
-  private variantName: string;
-  private isViaIdentity: boolean;
   private hasStreamOutput: boolean;
   private outFileParameter?: Property;
   private clientsidePagination?: boolean;
 
-  constructor(namespace: Namespace, operation: CommandOperation, state: State, objectInitializer?: DeepPartial<CmdletClass>) {
+  constructor(namespace: Namespace, operations: CommandOperation[], state: State, objectInitializer?: DeepPartial<CmdletClass>) {
     // generate the 'variant'  part of the name
+    const operation = operations.find(o => o.action === 'get') || operations[0];
     const noun = `${state.project.prefix}${operation.details.csharp.subjectPrefix}${operation.details.csharp.subject}`;
-    const variantName = `${noun}${operation.details.csharp.name ? `_${operation.details.csharp.name}` : ''}`;
 
-    const name = `${operation.details.csharp.verb}${variantName}`;
-    super(namespace, name, PSCmdlet);
+    const name = `${operation.details.csharp.verb}${noun}`;
+    const base = new Class(new Namespace(" Microsoft.Graph.PowerShell.Runtime.Cmdlets"), `${operation.details.csharp.verb}CmdletBase<${getClassOutputType(operation, state)}>`);
+    super(namespace, name, base);
     this.dropBodyParameter = operation.details.csharp.dropBodyParameter ? true : false;
     this.apply(objectInitializer);
     this.operation = operation;
+    this.operations = operations;
     this.state = state;
     this.thingsToSerialize = [];
-    this.variantName = variantName;
     this.hasStreamOutput = false;
 
-    this.interfaces.push(ClientRuntime.IEventListener);
     this.eventListener = new EventListener(new LiteralExpression(`((${ClientRuntime.IEventListener})this)`), true);
 
-    this.isViaIdentity = variantName.indexOf('ViaIdentity') > 0;
     this.clientsidePagination = !!operation.details.csharp.clientsidePagination && !!operation.callGraph[0].language.csharp?.pageable;
 
   }
@@ -368,48 +373,30 @@ export class CmdletClass extends Class {
   async init() {
 
     // basic stuff
-    this.addCommonStuff();
 
     this.description = escapeString(this.operation.details.csharp.description);
-    const $this = this;
-
-    this.add(new Method('BeginProcessing', dotnet.Void, {
-      override: Modifier.Override,
-      access: Access.Protected,
-      description: `(overrides the default BeginProcessing method in ${PSCmdlet})`,
-      *body() {
-        yield 'Module.Instance.SetProxyConfiguration(Proxy, ProxyCredential, ProxyUseDefaultCredentials);';
-        yield If($this.$<Property>('Break'), `${ClientRuntime.AttachDebugger}.Break();`);
-
-        yield $this.eventListener.syncSignal(Events.CmdletBeginProcessing);
-      }
-    }));
 
     // construct the class
-    this.NewAddClassAttributes(this.operation, this.variantName);
+    this.NewAddClassAttributes(this.operation);
     if (this.hasStreamOutput) {
       this.outFileParameter = this.add(new Property('OutFile', System.String, { attributes: [], description: 'Path to write output file to.' }));
       this.outFileParameter.add(new Attribute(ParameterAttribute, { parameters: ['Mandatory = true', 'HelpMessage = "Path to write output file to"'] }));
       this.outFileParameter.add(new Attribute(ValidateNotNull));
-      this.outFileParameter.add(new Attribute(CategoryAttribute, { parameters: [`${ParameterCategory}.Body`] }));
+      // this.outFileParameter.add(new Attribute(CategoryAttribute, { parameters: [`${ParameterCategory}.Body`] }));
     }
 
-    this.NewAddPowershellParameters(this.operation);
+    for (const operation of this.operations) {
+      this.NewAddPowershellParameters(operation);
+    }
 
-    // implement IEventListener
-    this.implementIEventListener();
-
-    // add constructors
-    this.implementConstructors();
+    this.AddIsSingleProperty();
+    this.AddUrlProperty();
 
     // processRecord
-    this.NewImplementProcessRecord(this.operation);
+    // this.NewImplementProcessRecord(this.operation);
 
-    this.NewImplementProcessRecordAsync(this.operation);
+    // this.NewImplementProcessRecordAsync(this.operation);
     this.debugMode = await this.state.getValue('debug', false);
-
-    // json serialization
-    this.NewImplementSerialization(this.operation);
 
     for (const prop of this.properties) {
       if (prop.name === 'Host') {
@@ -418,6 +405,80 @@ export class CmdletClass extends Class {
     }
 
     return this;
+  }
+  AddIsSingleProperty() {
+    const primary = this.primaryIdParameter;
+    if (!primary || !primary?.details?.csharp?.name) {
+      return;
+    }
+    const boolean = new StaticBoolean();
+    const cmdletParameter = new Property("IsSingle", boolean, {
+      get: toExpression(`!string.IsNullOrEmpty(${primary.details.csharp.name}) || InputObject != null`),
+      set: undefined,
+      override: Modifier.Override,
+      getAccess: Access.Protected,
+      setAccess: Access.Protected,
+    });
+    this.add(cmdletParameter);
+  }
+
+  AddUrlProperty() {
+    let getUrl = this.getUrl;
+    let listUrl = this.listUrl;
+    if (!getUrl || !listUrl) {
+      return;
+    }
+
+    const primary = this.primaryIdParameter;
+    for(const parameter of this.operation.parameters) {
+      const param = primary?.name === parameter.name
+        ? `{Uri.EscapeDataString(InputObject != null ? InputObject.Id : ${parameter.details.csharp.name})}`
+        : `{Uri.EscapeDataString(${parameter.details.csharp.name})}`;
+      getUrl = getUrl.replace(`{${parameter.name}}`, param);
+      listUrl = listUrl.replace(`{${parameter.name}}`,param);
+    }
+    const cmdletParameter = new Property("Url", new StaticString(), {
+      get: toExpression(`IsSingle ? $"${getUrl}" : $"${listUrl}"`),
+      set: undefined,
+      override: Modifier.Override,
+      getAccess: Access.Protected,
+      setAccess: Access.Protected
+    });
+    this.add(cmdletParameter);
+  }
+
+  public get getUrl(): string {
+    return this.requestUrl(this.operation);
+  }
+
+  public get listUrl(): string {
+    return this.requestUrl(this.operations.find(o => o.action === 'list') || this.operations[0]);
+  }
+
+  private get primaryIdParameter(): IParameter | undefined {
+    const parameters  = this.getUrl.match(/\{([\w-]+)\}/gi);
+    if (!parameters) {
+      return;
+    }
+    let parameterId = parameters[parameters.length -1];
+    parameterId = parameterId.substring(1, parameterId.length - 1);
+    return this.operation.parameters.find(p => p.name === parameterId);
+  }
+
+  private requestUrl(operation: CommandOperation): string {
+    for (const httpOperation of values(operation.callGraph)) {
+      const request = httpOperation.requests?.[0];
+      if (!request) {
+        continue;
+      }
+      const httpMethod = request.protocol.http?.method ?? '';
+      const httpPath = request.protocol.http?.path;
+      if (httpMethod === "get" && httpPath) {
+        return httpPath;
+      }
+
+    }
+    return '';
   }
 
   public get headerComment(): string {
@@ -449,78 +510,6 @@ export class CmdletClass extends Class {
 
     return ops ? `${header}\n${docComment(xmlize('remarks', ops))}` : header;
   }
-
-  private addCommonStuff() {
-
-    // add a private copy of invocation information for our own uses.
-    const privateInvocationInfo = this.add(new Field('__invocationInfo', InvocationInfo, { description: 'A copy of the Invocation Info (necessary to allow asJob to clone this cmdlet)', access: Access.Private }));
-    this.invocationInfo = new Property('InvocationInformation', InvocationInfo, { description: 'Accessor for our copy of the InvocationInfo.' });
-    this.invocationInfo.get = toExpression(`${privateInvocationInfo.value} = ${privateInvocationInfo.value} ?? this.MyInvocation `);
-    this.invocationInfo.set = new Statements(privateInvocationInfo.assign('value'));
-    this.add(this.invocationInfo);
-
-    if (this.state.project.azure) {
-      this.correlationId = this.add(new Field('__correlationId', dotnet.String, { initialValue: 'System.Guid.NewGuid().ToString()', description: 'A unique id generatd for the this cmdlet when it is instantiated.', access: Access.Private }));
-      this.processRecordId = this.add(new Field('__processRecordId', dotnet.String, { description: 'A unique id generatd for the this cmdlet when ProcessRecord() is called.', access: Access.Private }));
-    }
-
-    // pipeline property
-    this.add(new Property('Pipeline', ClientRuntime.HttpPipeline, { getAccess: Access.Private, setAccess: Access.Private, description: `The instance of the <see cref="${ClientRuntime.HttpPipeline}" /> that the remote call will use.` }));
-
-    // client API property (gs01: fill this in correctly)
-    const clientAPI = new ClassType(this.state.model.language.csharp?.namespace, this.state.model.language.csharp?.name || '');
-    this.add(new LambdaProperty('Client', clientAPI, new LiteralExpression(`${this.state.project.serviceNamespace.moduleClass.declaration}.Instance.ClientAPI`), { description: 'The reference to the client API class.' }));
-
-    this.add(new Method('StopProcessing', dotnet.Void, { access: Access.Protected, override: Modifier.Override, description: 'Interrupts currently running code within the command.' })).add(function* () {
-      yield `((${ClientRuntime.IEventListener})this).Cancel();`;
-      yield 'base.StopProcessing();';
-    });
-
-    const $this = this;
-    this.add(new Method('EndProcessing', dotnet.Void, { access: Access.Protected, override: Modifier.Override, description: 'Performs clean-up after the command execution' })).add(function* () {
-      // gs01: remember what you were doing here to make it so these can be parallelized...
-      yield '';
-      yield $this.eventListener.syncSignal(Events.CmdletEndProcessing);
-    });
-
-    // debugging
-    const brk = this.add(new Property('Break', SwitchParameter, { attributes: [], description: 'Wait for .NET debugger to attach' }));
-    brk.add(new Attribute(ParameterAttribute, { parameters: ['Mandatory = false', 'DontShow = true', 'HelpMessage = "Wait for .NET debugger to attach"'] }));
-    brk.add(new Attribute(CategoryAttribute, { parameters: [`${ParameterCategory}.Runtime`] }));
-
-    // Cmdlet Parameters for pipeline manipulations.
-    const prepend = this.add(new Property('HttpPipelinePrepend', ClientRuntime.SendAsyncSteps, { attributes: [], description: 'SendAsync Pipeline Steps to be prepended to the front of the pipeline' }));
-    prepend.add(new Attribute(ParameterAttribute, { parameters: ['Mandatory = false', 'DontShow = true', 'HelpMessage = "SendAsync Pipeline Steps to be prepended to the front of the pipeline"'] }));
-    prepend.add(new Attribute(ValidateNotNull));
-    prepend.add(new Attribute(CategoryAttribute, { parameters: [`${ParameterCategory}.Runtime`] }));
-
-    const append = this.add(new Property('HttpPipelineAppend', ClientRuntime.SendAsyncSteps, { attributes: [], description: 'SendAsync Pipeline Steps to be appended to the front of the pipeline' }));
-    append.add(new Attribute(ParameterAttribute, { parameters: ['Mandatory = false', 'DontShow = true', 'HelpMessage = "SendAsync Pipeline Steps to be appended to the front of the pipeline"'] }));
-    append.add(new Attribute(ValidateNotNull));
-    append.add(new Attribute(CategoryAttribute, { parameters: [`${ParameterCategory}.Runtime`] }));
-
-    const proxyCredential = this.add(new Property('ProxyCredential', PSCredential, { attributes: [], description: 'Credentials for a proxy server to use for the remote call' }));
-    proxyCredential.add(new Attribute(ParameterAttribute, { parameters: ['Mandatory = false', 'DontShow = true', 'HelpMessage = "Credentials for a proxy server to use for the remote call"'] }));
-    proxyCredential.add(new Attribute(ValidateNotNull));
-    proxyCredential.add(new Attribute(CategoryAttribute, { parameters: [`${ParameterCategory}.Runtime`] }));
-
-    const useDefaultCreds = this.add(new Property('ProxyUseDefaultCredentials ', SwitchParameter, { attributes: [], description: 'Use the default credentials for the proxy' }));
-    useDefaultCreds.add(new Attribute(ParameterAttribute, { parameters: ['Mandatory = false', 'DontShow = true', 'HelpMessage = "Use the default credentials for the proxy"'] }));
-    useDefaultCreds.add(new Attribute(CategoryAttribute, { parameters: [`${ParameterCategory}.Runtime`] }));
-
-    const proxyUri = this.add(new Property('Proxy', System.Uri, { attributes: [], description: 'The URI for the proxy server to use' }));
-    proxyUri.add(new Attribute(ParameterAttribute, { parameters: ['Mandatory = false', 'DontShow = true', 'HelpMessage = "The URI for the proxy server to use"'] }));
-    proxyUri.add(new Attribute(CategoryAttribute, { parameters: [`${ParameterCategory}.Runtime`] }));
-
-    if (this.state.project.azure) {
-      this.defaultProfile = this.add(new Property('DefaultProfile', PSObject, { description: 'The credentials, account, tenant, and subscription used for communication with Azure' }));
-      this.defaultProfile.add(new Attribute(ParameterAttribute, { parameters: ['Mandatory = false', 'HelpMessage = "The credentials, account, tenant, and subscription used for communication with Azure."'] }));
-      this.defaultProfile.add(new Attribute(ValidateNotNull));
-      this.defaultProfile.add(new Attribute(Alias, { parameters: ['"AzureRMContext"', '"AzureCredential"'] }));
-      this.defaultProfile.add(new Attribute(CategoryAttribute, { parameters: [`${ParameterCategory}.Azure`] }));
-    }
-  }
-
 
   private NewIsWritableCmdlet(operation: CommandOperation): boolean {
     if (operation.callGraph[0].requests) {
@@ -674,7 +663,7 @@ export class CmdletClass extends Class {
               param: values($this.properties).
                 where(each => each.metadata.parameterDefinition).
                 first(each => each.metadata.parameterDefinition.language.csharp?.serializedName === p.language.csharp?.serializedName), // xichen: Is it safe enough to use serializedName?
-              isPathParam: $this.isViaIdentity && p.protocol.http?.in === ParameterLocation.Path
+              isPathParam: isViaIdentity(operation) && p.protocol.http?.in === ParameterLocation.Path
             };
 
           }).
@@ -981,7 +970,7 @@ export class CmdletClass extends Class {
           const idschema = values($this.state.project.model.schemas.objects).first(each => each.language.default.uid === 'universal-parameter-type');
 
 
-          if ($this.isViaIdentity) {
+          if (isViaIdentity(operation)) {
             const identityFromPathParams = function* () {
               yield '// try to call with PATH parameters from Input Object';
 
@@ -1063,147 +1052,6 @@ export class CmdletClass extends Class {
       yield Finally(function* () {
         yield $this.eventListener.signalNoCheck(Events.CmdletProcessRecordAsyncEnd);
       });
-    });
-  }
-
-
-  private NewImplementSerialization(operation: CommandOperation) {
-    const $this = this;
-    // clone
-    if (operation.asjob) {
-      const clone = this.add(new Method('Clone', this, {
-        description: 'Creates a duplicate instance of this cmdlet (via JSON serialization).',
-        returnsDescription: `a duplicate instance of ${this.name}`,
-      }));
-
-      clone.add(function* () {
-        const i = new LocalVariable('clone', dotnet.Var, {
-          initializer: $this.new()
-        });
-        yield i.declarationStatement;
-
-        if ($this.state.project.azure) {
-          for (const f of [$this.correlationId, $this.processRecordId, $this.defaultProfile]) {
-            yield `${i.value}.${f} = this.${f};`;
-          }
-        }
-        for (const f of [$this.invocationInfo, 'Proxy', 'Pipeline', 'AsJob', 'Break', 'ProxyCredential', 'ProxyUseDefaultCredentials', 'HttpPipelinePrepend', 'HttpPipelineAppend',]) {
-          yield `${i.value}.${f} = this.${f};`;
-        }
-
-        for (const f of $this.thingsToSerialize) {
-          yield `${i.value}.${f} = this.${f};`;
-        }
-
-        // _name = this._name,
-        //_parametersBody = this._parametersBody,
-        //_resourceGroupName = this._resourceGroupName,
-        //_subscriptionId = this._subscriptionId,
-
-        yield Return(i);
-      });
-    }
-  }
-  private implementConstructors() {
-    // default constructor
-    this.add(new Constructor(this, { description: `Intializes a new instance of the <see cref="${this.name}" /> cmdlet class.` }));
-  }
-
-  private implementIEventListener() {
-    const $this = this;
-    const cts = this.add(new Field('_cancellationTokenSource', System.Threading.CancellationTokenSource, {
-      access: Access.Private,
-      initialValue: new LiteralExpression(`new ${System.Threading.CancellationTokenSource.declaration}()`),
-      description: `The <see cref="${System.Threading.CancellationTokenSource}" /> for this operation.`
-    }));
-    this.add(new LambdaProperty(`${ClientRuntime.IEventListener}.Token`, System.Threading.CancellationToken, new LiteralExpression(`${cts.value}.Token`), { getAccess: Access.Default, setAccess: Access.Default, description: '<see cref="IEventListener" /> cancellation token.' }));
-    this.cancellationToken = toExpression(`((${ClientRuntime.IEventListener})this).Token`);
-    this.add(new LambdaProperty(`${ClientRuntime.IEventListener}.Cancel`, System.Action(), new LiteralExpression(`${cts.value}.Cancel`), { getAccess: Access.Default, setAccess: Access.Default, description: '<see cref="IEventListener" /> cancellation delegate. Stops the cmdlet when called.' }));
-
-    const id = new Parameter('id', dotnet.String, { description: 'The message id' });
-    const token = new Parameter('token', System.Threading.CancellationToken, { description: 'The message cancellation token. When this call is cancelled, this should be <c>true</c>' });
-    const messageData = new Parameter('messageData', System.Func(ClientRuntime.EventData), { description: 'Detailed message data for the message event.' });
-    const signalMethod = this.add(new Method(`${ClientRuntime.IEventListener}.Signal`, System.Threading.Tasks.Task(), {
-      async: Modifier.Async,
-      parameters: [id, token, messageData],
-      access: Access.Default,
-      description: 'Handles/Dispatches events during the call to the REST service.',
-      returnsDescription: `A <see cref="${System.Threading.Tasks.Task()}" /> that will be complete when handling of the message is completed.`
-    }));
-    signalMethod.push(Using('NoSynchronizationContext', ''));
-
-    signalMethod.add(function* () {
-      yield If(`${token.value}.IsCancellationRequested`, Return());
-
-      // if the
-
-      const sw = Switch(id, [
-        TerminalCase(Events.Verbose.value, function* () {
-          yield `WriteVerbose($"{(messageData().Message ?? ${System.String.Empty})}");`;
-          yield Return();
-        }),
-
-        TerminalCase(Events.Warning.value, function* () {
-          yield `WriteWarning($"{(messageData().Message ?? ${System.String.Empty})}");`;
-          yield Return();
-        }),
-        TerminalCase(Events.Information.value, function* () {
-          if ($this.operation.asjob) {
-            yield '// When an operation supports asjob, Information messages must go thru verbose.';
-            yield `WriteVerbose($"INFORMATION: {(messageData().Message ?? ${System.String.Empty})}");`;
-          }
-          else {
-            const data = new LocalVariable('data', dotnet.Var, { initializer: new LiteralExpression(`${messageData.use}()`) });
-            yield data.declarationStatement;
-            yield 'WriteInformation(data.Message, new string[]{});';
-          }
-          yield Return();
-
-        }),
-        TerminalCase(Events.Debug.value, function* () {
-          yield `WriteDebug($"{(messageData().Message ?? ${System.String.Empty})}");`;
-          yield Return();
-        }),
-        TerminalCase(Events.Error.value, function* () {
-          yield 'WriteError(new global::System.Management.Automation.ErrorRecord( new global::System.Exception(messageData().Message), string.Empty, global::System.Management.Automation.ErrorCategory.NotSpecified, null ) );';
-          yield Return();
-        }),
-      ]);
-
-      if ($this.operation.asjob) {
-        // if we support -AsJob, we support -NoWait
-        sw.add(Case(Events.DelayBeforePolling.value, function* () {
-          yield If('true == MyInvocation?.BoundParameters?.ContainsKey("NoWait")', function* () {
-            yield 'var data = messageData();';
-            yield 'if (data.ResponseMessage is System.Net.Http.HttpResponseMessage response)';
-            yield '{';
-            yield '    var asyncOperation = response.GetFirstHeader(@"Azure-AsyncOperation");';
-            yield '    var location = response.GetFirstHeader(@"Location");';
-            yield '    var uri = global::System.String.IsNullOrEmpty(asyncOperation) ? global::System.String.IsNullOrEmpty(location) ? response.RequestMessage.RequestUri.AbsoluteUri : location : asyncOperation;';
-            yield `    WriteObject(new ${ClientRuntime}.PowerShell.AsyncOperationResponse { Target = uri });`;
-
-            yield '    // do nothing more. ';
-            yield '    data.Cancel();';
-            yield '    return;';
-            yield '}';
-          });
-        }));
-      }
-
-      // the whole switch statement
-      yield sw;
-
-      if ($this.state.project.azure) {
-        // in azure mode, we signal the AzAccount module with every event that makes it here.
-        yield `await ${$this.state.project.serviceNamespace.moduleClass.declaration}.Instance.Signal(${id.value}, ${token.value}, ${messageData.value}, (i,t,m) => ((${ClientRuntime.IEventListener})this).Signal(i,t,()=> ${ClientRuntime.EventDataConverter}.ConvertFrom( m() ) as ${ClientRuntime.EventData} ), ${$this.invocationInfo.value}, this.ParameterSetName, ${$this.correlationId.value}, ${$this.processRecordId.value}, null );`;
-        yield If(`${token.value}.IsCancellationRequested`, Return());
-      } else {
-        // In Non-Azure Modes, emit the Signal method without coorelation and processrecordid
-        yield `await ${$this.state.project.serviceNamespace.moduleClass.declaration}.Instance.Signal(${id.value}, ${token.value}, ${messageData.value}, (i,t,m) => ((${ClientRuntime.IEventListener})this).Signal(i,t,()=> ${ClientRuntime.EventDataConverter}.ConvertFrom( m() ) as ${ClientRuntime.EventData} ), ${$this.invocationInfo.value}, this.ParameterSetName, null );`;
-        yield If(`${token.value}.IsCancellationRequested`, Return());
-      }
-      yield `WriteDebug($"{id}: {(messageData().Message ?? ${System.String.Empty})}");`;
-      // any handling of the signal on our side...
     });
   }
 
@@ -1353,13 +1201,10 @@ export class CmdletClass extends Class {
             $this.add(inputFileParameter);
           } else {
             cmdletParameter.add(new Attribute(ParameterAttribute, { parameters: [new LiteralExpression(`Mandatory = ${vParam.required ? 'true' : 'false'}`), new LiteralExpression(`HelpMessage = "${escapeString(desc || '.')}"`)] }));
-            cmdletParameter.add(new Attribute(CategoryAttribute, { parameters: [`${ParameterCategory}.Body`] }));
-            NewAddInfoAttribute(cmdletParameter, propertyType, !!vParam.required, false, desc, (<NewVirtualProperty>vParam.origin).property.serializedName);
-            NewAddCompleterInfo(cmdletParameter, vParam);
-            addParameterBreakingChange(cmdletParameter, vParam);
-            addPreviewMessage(cmdletParameter, vParam);
-            addDefaultInfo(cmdletParameter, vParam);
-            this.addDoNotExport(cmdletParameter, vParam);
+            // addParameterBreakingChange(cmdletParameter, vParam);
+            // addPreviewMessage(cmdletParameter, vParam);
+            // addDefaultInfo(cmdletParameter, vParam);
+            // this.addDoNotExport(cmdletParameter, vParam);
           }
 
           const isEnum = propertyType instanceof EnumImplementation;;
@@ -1408,18 +1253,6 @@ export class CmdletClass extends Class {
       }
     }
 
-    if (this.isViaIdentity) {
-      // add in the pipeline parameter for the identity
-
-      const idschema = values(this.state.project.model.schemas.objects).first(each => each.language.default.uid === 'universal-parameter-type');
-      const idtd = this.state.project.schemaDefinitionResolver.resolveTypeDeclaration(idschema, true, this.state);
-      const idParam = this.add(new BackedProperty('InputObject', idtd, {
-        description: 'Identity Parameter'
-      }));
-      const parameters = [new LiteralExpression('Mandatory = true'), new LiteralExpression('HelpMessage = "Identity Parameter"'), new LiteralExpression('ValueFromPipeline = true')];
-      idParam.add(new Attribute(ParameterAttribute, { parameters }));
-      idParam.add(new Attribute(CategoryAttribute, { parameters: [`${ParameterCategory}.Path`] }));
-    }
     for (const vParam of values(vps.operation)) {
       if (vParam.name === 'Host') {
         // skip 'Host'
@@ -1480,12 +1313,12 @@ export class CmdletClass extends Class {
         regularCmdletParameter.add(new Attribute(AllowEmptyCollectionAttribute));
       }
 
-      NewAddInfoAttribute(regularCmdletParameter, propertyType, vParam.required ?? false, false, vParam.description, origin.name);
-      NewAddCompleterInfo(regularCmdletParameter, vParam);
-      addParameterBreakingChange(regularCmdletParameter, vParam);
-      addPreviewMessage(regularCmdletParameter, vParam);
-      addDefaultInfo(regularCmdletParameter, vParam);
-      this.addDoNotExport(regularCmdletParameter, vParam);
+      // NewAddInfoAttribute(regularCmdletParameter, propertyType, vParam.required ?? false, false, vParam.description, origin.name);
+      // NewAddCompleterInfo(regularCmdletParameter, vParam);
+      // addParameterBreakingChange(regularCmdletParameter, vParam);
+      // addPreviewMessage(regularCmdletParameter, vParam);
+      // addDefaultInfo(regularCmdletParameter, vParam);
+      // this.addDoNotExport(regularCmdletParameter, vParam);
 
       // add aliases if there is any
       if (length(vParam.alias) > 0) {
@@ -1499,9 +1332,9 @@ export class CmdletClass extends Class {
         // xichen: Is it safe to compare by csharp serializedName? Because we no longer have uid
         const cat = operation.callGraph[0].parameters?.find((param) => !param.language.csharp?.constantValue && param.language.csharp?.serializedName === httpParam.language.csharp?.serializedName);
 
-        if (cat) {
-          regularCmdletParameter.add(new Attribute(CategoryAttribute, { parameters: [`${ParameterCategory}.${pascalCase((cat.protocol.http?.in))}`] }));
-        }
+        // if (cat) {
+          // regularCmdletParameter.add(new Attribute(CategoryAttribute, { parameters: [`${ParameterCategory}.${pascalCase((cat.protocol.http?.in))}`] }));
+        // }
       }
 
 
@@ -1539,10 +1372,9 @@ export class CmdletClass extends Class {
     }
   }
 
-  private NewAddClassAttributes(operation: CommandOperation, variantName: string) {
+  private NewAddClassAttributes(operation: CommandOperation) {
     const cmdletAttribParams: Array<ExpressionOrLiteral> = [
-      category[operation.details.csharp.verb] ? verbEnum(category[operation.details.csharp.verb], operation.details.csharp.verb) : `"${operation.details.csharp.verb}"`,
-      new StringExpression(variantName)
+      category[operation.details.csharp.verb] ? verbEnum(category[operation.details.csharp.verb], operation.details.csharp.verb) : `"${operation.details.csharp.verb}"`
     ];
 
     if (this.NewIsWritableCmdlet(operation)) {
@@ -1572,7 +1404,6 @@ export class CmdletClass extends Class {
     const outputTypes = new Set<string>();
     for (const httpOperation of values(operation.callGraph)) {
       const pageableInfo = httpOperation.language.csharp?.pageable;
-      const v = httpOperation.responses && httpOperation.responses.length > 0 && httpOperation.responses[0] instanceof SchemaResponse;
       // Add this for binary response in m4
       for (const binary of values(httpOperation.responses).selectNonNullable(each => (<BinaryResponse>each).binary)) {
         if (binary) {

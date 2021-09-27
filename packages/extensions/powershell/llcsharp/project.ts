@@ -71,9 +71,9 @@ export class Project extends codeDomProject {
     this.addNamespace(this.serviceNamespace);
 
     // add support namespace
-    this.supportNamespace = new SupportNamespace(this.serviceNamespace, this.state);
-    this.supportNamespace.header = this.license;
-    this.addNamespace(this.supportNamespace);
+    // this.supportNamespace = new SupportNamespace(this.serviceNamespace, this.state);
+    // this.supportNamespace.header = this.license;
+    // this.addNamespace(this.supportNamespace);
 
     // add model classes
     this.modelsNamespace = new ModelsNamespace(this.serviceNamespace, this.state.model.schemas, this.state.path('components', 'schemas'));
@@ -81,7 +81,7 @@ export class Project extends codeDomProject {
     this.addNamespace(this.modelsNamespace);
 
     // create API class
-    new ApiClass(this.serviceNamespace, this.state, { description: `Low-level API implementation for the ${this.state.model.info.title} service. \n${this.state.model.info.description || ''}` });
+    // new ApiClass(this.serviceNamespace, this.state, { description: `Low-level API implementation for the ${this.state.model.info.title} service. \n${this.state.model.info.description || ''}` });
 
     // abort now if we have any errors.
     this.state.checkpoint();

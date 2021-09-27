@@ -32,7 +32,7 @@ export class ModelExtensionsNamespace extends Namespace {
   private subNamespaces = new Dictionary<Namespace>();
 
   public get outputFolder(): string {
-    return join(this.state.project.apiFolder, 'Models');
+    return this.state.project.modelFolder;
   }
   resolver = new SchemaDefinitionResolver();
 

@@ -3,15 +3,15 @@
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
 
-import { Components, IParameter, LanguageDetails } from './components';
-import { Extensions } from './extensions';
-import { ProgramaticOperationDetails, ProgrammaticOperation } from './programatic-operation';
-import { VirtualProperty } from './schema';
-import { DeepPartial } from '@azure-tools/codegen';
-import { Operation, Schema } from '@autorest/codemodel';
+import { Components, IParameter, LanguageDetails } from "./components";
+import { Extensions } from "./extensions";
+import { ProgramaticOperationDetails, ProgrammaticOperation } from "./programatic-operation";
+import { VirtualProperty } from "./schema";
+import { DeepPartial } from "@azure-tools/codegen";
+import { Operation, Schema } from "@autorest/codemodel";
 
-import { uid } from './uid';
-import { Dictionary } from '@azure-tools/linq';
+import { uid } from "./uid";
+import { Dictionary } from "@azure-tools/linq";
 
 export interface VirtualParameters {
   body: Array<VirtualParameter>;
@@ -29,6 +29,7 @@ export interface CompleterInfo {
 }
 
 export interface CommandOperation extends ProgrammaticOperation {
+  action: string;
   alias: Array<string>;
   verb: string;
   noun: string;
@@ -36,6 +37,7 @@ export interface CommandOperation extends ProgrammaticOperation {
   category: string;
   asjob: boolean;
   callGraph: Array<Operation>;
+  subject: string;
 }
 
 export interface VirtualParameter {
@@ -61,9 +63,9 @@ export class CommandOperation extends Extensions implements CommandOperation {
     this.details = {
       default: {
         uid: `command-operation:${uid()}`,
-        description: initializer?.description || '',
+        description: initializer?.description || "",
         name,
-      }
+      },
     };
     this.deprecated = false;
     this.pure = true;
@@ -72,9 +74,6 @@ export class CommandOperation extends Extensions implements CommandOperation {
   }
 }
 
-export interface CommandComponents extends Components<CommandOperation, IParameter> {
+export interface CommandComponents extends Components<CommandOperation, IParameter> {}
 
-}
-
-export class CommandComponents extends Components<CommandOperation, IParameter> {
-}
+export class CommandComponents extends Components<CommandOperation, IParameter> {}

@@ -1,0 +1,52 @@
+# Node.js
+# Build a general Node.js project with npm.
+# Add steps that analyze code, save build artifacts, deploy, and more:
+# https://docs.microsoft.com/azure/devops/pipelines/languages/javascript
+
+trigger:
+  - master
+
+pool:
+  vmImage: "ubuntu-latest"
+
+jobs:
+  - template: ./templates/build-and-test-job.yaml
+    parameters:
+      name: node10
+      nodeVersion: 10.x
+  - template: ./templates/build-and-test-job.yaml
+    parameters:
+      name: node12
+      nodeVersion: 12.x
+  - template: ./templates/build-and-test-job.yaml
+    parameters:
+      name: node14
+      nodeVersion: 14.x
+  - template: ./templates/build-and-test-job.yaml
+    parameters:
+      name: node15
+      nodeVersion: 15.x
+  - template: ./templates/build-and-test-job.yaml
+    parameters:
+      name: node14windows
+      nodeVersion: 14.x
+      vmImage: windows-latest
+
+  - job: lint
+    displayName: Linting
+    steps:
+      - ${{ if eq(variables['Build.Reason'], 'PullRequest') }}:
+        - template: ./templates/verify-changes.yaml
+        
+      - task: NodeTool@0
+        inputs:
+          versionSpec: "14.x"
+        displayName: "Install Node.js"
+      
+      - script: |
+          npm install -g npm 
+          npx @microsoft/rush update
+        displayName: Install dependencies
+
+      - script: npx @microsoft/rush lint
+        displayName: Lint

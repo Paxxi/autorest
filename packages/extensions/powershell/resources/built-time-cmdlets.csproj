@@ -1,0 +1,42 @@
+<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <RootNamespace>Microsoft.Rest.ClientRuntime.PowerShell</RootNamespace>
+    <DefaultItemExcludes>$(DefaultItemExcludes);**\*.*</DefaultItemExcludes>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="PowerShellStandard.Library" Version="5.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Include="runtime\csharp\client\IAssociativeArray.cs" Link="IAssociativeArray.cs" />
+    <Compile Include="runtime\csharp\client\InfoAttribute.cs" Link="InfoAttribute.cs" />
+    <Compile Include="psruntime\BuildTime\Cmdlets\ExportModelSurface.cs" />
+    <Compile Include="psruntime\BuildTime\Cmdlets\ExportCmdletSurface.cs" />
+    <Compile Include="psruntime\BuildTime\Cmdlets\ExportHelpMarkdown.cs" />
+    <Compile Include="psruntime\BuildTime\Cmdlets\ExportFormatPs1xml.cs" />
+    <Compile Include="psruntime\BuildTime\Cmdlets\ExportExampleStub.cs" />
+    <Compile Include="psruntime\BuildTime\Cmdlets\GetModuleGuid.cs" />
+    <Compile Include="psruntime\BuildTime\Cmdlets\ExportPsd1.cs" />
+    <Compile Include="psruntime\BuildTime\Cmdlets\GetCommonParameter.cs" />
+    <Compile Include="psruntime\BuildTime\Models\PsHelpMarkdownOutputs.cs" />
+    <Compile Include="psruntime\BuildTime\Models\PsMarkdownTypes.cs" />
+    <Compile Include="psruntime\BuildTime\Models\PsHelpTypes.cs" />
+    <Compile Include="psruntime\BuildTime\Models\PsFormatTypes.cs" />
+    <Compile Include="psruntime\BuildTime\Cmdlets\GetScriptCmdlet.cs" />
+    <Compile Include="psruntime\BuildTime\Cmdlets\ExportProxyCmdlet.cs" />
+    <Compile Include="psruntime\BuildTime\Cmdlets\ExportTestStub.cs" />
+    <Compile Include="psruntime\BuildTime\MarkdownRenderer.cs" />
+    <Compile Include="psruntime\BuildTime\PsHelpers.cs" />
+    <Compile Include="psruntime\BuildTime\PsAttributes.cs" />
+    <Compile Include="psruntime\BuildTime\PsExtensions.cs" />
+    <Compile Include="psruntime\BuildTime\Models\PsProxyOutputs.cs" />
+    <Compile Include="psruntime\BuildTime\Models\PsProxyTypes.cs" />
+    <Compile Include="psruntime\BuildTime\CollectionExtensions.cs" />
+    <Compile Include="psruntime\BuildTime\StringExtensions.cs" />
+    <Compile Include="psruntime\BuildTime\XmlExtensions.cs" />
+  </ItemGroup>
+
+</Project>

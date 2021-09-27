@@ -27,7 +27,7 @@ modelerfour:
 ``` yaml !isLoaded('@autorest/modelerfour')
 use: "file:///c:/code/autorest/packages/extensions/modelerfour"
 
-# will use highest 2.0.x 
+# will use highest 2.0.x
 ```
 
 
@@ -65,8 +65,9 @@ dll-name: $(module-name).private
 ``` yaml
 use-namespace-folders: false
 current-folder: .
-module-folder: $(current-folder)/generated
+module-folder: $(current-folder)
 cmdlet-folder: $(module-folder)/cmdlets
+model-folder: $(module-folder)/models
 model-cmdlet-folder: $(custom-cmdlet-folder)/autogen-model-cmdlets
 custom-cmdlet-folder: $(current-folder)/custom
 utils-cmdlet-folder: $(current-folder)/utils
@@ -100,7 +101,7 @@ declare-directive:
   no-inline: >-
     (() => {
       return {
-        from: "code-model-v3", 
+        from: "code-model-v3",
         where: (Array.isArray($) ? $ : [$]).map( each => `$.schemas[?(/^${each}$/i.exec(@.details.default.name))]`),
         transform: "$.details.default['skip-inline'] = true;"
       };
@@ -120,13 +121,13 @@ pipeline:
   tweakcodemodel-v2:
     input: tweakm4codemodel
     # input: clicommon/identity
-  
+
   tweakcodemodelazure-v2:
     input: tweakcodemodel-v2
 
   create-commands-v2:
     input: tweakcodemodelazure-v2
-  
+
   create-virtual-properties-v2:
     input: create-commands-v2
 
@@ -144,11 +145,11 @@ pipeline:
 
   llcsharp-v2:
     input: modifiers-v2
-  
+
   powershell-v2:
     input: add-azure-completers-v2
 
-# --- extension llcsharp  --- 
+# --- extension llcsharp  ---
   # generates c# files for http-operations
   llcsharp/text-transform:
     input: llcsharp-v2
@@ -193,9 +194,9 @@ output-artifact:
   - source-file-powershell
   - source-file-other
   - binary-file
-  - preserved-files  
-  
-directive: 
+  - preserved-files
+
+directive:
   - reason: FixFromXML
     from: source-file-csharp
     where: $
@@ -416,7 +417,7 @@ verb-mapping:
   Write: Write
 ```
 
-``` yaml 
+``` yaml
 cli:
     reason: 'Keep same as modelerfour'
     naming:
