@@ -24,7 +24,6 @@ class ApiVersionNamespace extends Namespace {
   constructor(namespace: string, objectInitializer?: DeepPartial<ApiVersionNamespace>) {
     super(namespace);
     this.apply(objectInitializer);
-    this.add(new ImportDirective(`static ${ClientRuntime.Extensions}`));
   }
 
   get outputFolder() {
@@ -43,36 +42,50 @@ export class ModelsNamespace extends Namespace {
 
 
     this.apply(objectInitializer);
-    this.add(new ImportDirective(`static ${ClientRuntime.Extensions}`));
 
     // special case... hook this up before we get anywhere.
     state.project.modelsNamespace = this;
 
     if (schemas.objects) {
       for (const schema of schemas.objects) {
-        this.NewResolveTypeDeclaration(schema, true, <State>state);
+        if (!schema.language.csharp?.name.startsWith("Collection") &&
+            !schema.language.csharp?.name.startsWith("Dictionary")) {
+          this.NewResolveTypeDeclaration(schema, true, <State>state);
+        }
       }
     }
     if (schemas.dictionaries) {
       for (const schema of schemas.dictionaries) {
-        this.NewResolveTypeDeclaration(schema, true, <State>state);
+        if (!schema.language.csharp?.name.startsWith("Collection") &&
+            !schema.language.csharp?.name.startsWith("Dictionary")) {
+          this.NewResolveTypeDeclaration(schema, true, <State>state);
+        }
       }
     }
 
     if (schemas.any) {
       for (const schema of schemas.any) {
-        this.NewResolveTypeDeclaration(schema, true, <State>state);
+        if (!schema.language.csharp?.name.startsWith("Collection") &&
+            !schema.language.csharp?.name.startsWith("Dictionary")) {
+          this.NewResolveTypeDeclaration(schema, true, <State>state);
+        }
       }
     }
 
     if (schemas.strings) {
       for (const schema of schemas.strings) {
-        this.NewResolveTypeDeclaration(schema, true, <State>state);
+        if (!schema.language.csharp?.name.startsWith("Collection") &&
+            !schema.language.csharp?.name.startsWith("Dictionary")) {
+          this.NewResolveTypeDeclaration(schema, true, <State>state);
+        }
       }
     }
     if (schemas.sealedChoices) {
       for (const schema of schemas.sealedChoices) {
-        this.NewResolveTypeDeclaration(schema, true, <State>state);
+        if (!schema.language.csharp?.name.startsWith("Collection") &&
+            !schema.language.csharp?.name.startsWith("Dictionary")) {
+          this.NewResolveTypeDeclaration(schema, true, <State>state);
+        }
       }
     }
     //todo, need to add support for other types
@@ -80,7 +93,7 @@ export class ModelsNamespace extends Namespace {
   }
 
   get outputFolder() {
-    return 'Models';
+    return this.state.project.modelfolder;
   }
 
   public NewResolveTypeDeclaration(schema: NewSchema | undefined, required: boolean, state: State): EnhancedTypeDeclaration {

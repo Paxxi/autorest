@@ -25,6 +25,8 @@ export class Project extends codeDomProject {
   protected state!: State;
 
   apifolder!: string;
+  modelfolder!: string;
+  basefolder!: string;
   runtimefolder!: string;
   azure!: boolean;
   license!: string;
@@ -40,7 +42,9 @@ export class Project extends codeDomProject {
     await super.init();
 
     this.state = await new State(this.service).init(this);
+    this.basefolder = await this.state.getValue('current-folder');
     this.apifolder = await this.state.getValue('api-folder', '');
+    this.modelfolder = await this.state.getValue('model-folder', '');
     this.runtimefolder = await this.state.getValue('runtime-folder', 'runtime');
     this.azure = await this.state.getValue('azure', false) || await this.state.getValue('azure-arm', false);
     this.identityCorrection = await this.state.getValue('identity-correction-for-post', false);

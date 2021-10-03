@@ -100,9 +100,7 @@ ${indent(methods, 1)}
   }
 
   public get declaration(): string {
-    return `
-${this.fullName}
-`.trim();
+    return `${this.fullName}`.trim().replace(/^\./, '');
   }
 
   public new(...parameters: Array<Expression>): Expression {

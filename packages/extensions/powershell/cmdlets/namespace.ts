@@ -2,11 +2,10 @@
  *  Copyright (c) Microsoft Corporation. All rights reserved.
  *  Licensed under the MIT License. See License.txt in the project root for license information.
  *--------------------------------------------------------------------------------------------*/
-import { items, values, keys, Dictionary, length } from "@azure-tools/linq";
 import { ImportDirective, Namespace } from "@azure-tools/codegen-csharp";
-import { Schema, ClientRuntime } from "../llcsharp/exports";
+import { Schema } from "../llcsharp/exports";
 import { State } from "../internal/state";
-import { CmdletClass } from "./class";
+import { CmdletClass, getClassOutputType } from "./class";
 import { DeepPartial } from "@azure-tools/codegen";
 import { groupBy } from "lodash";
 
@@ -22,8 +21,10 @@ export class CmdletNamespace extends Namespace {
   }
 
   async init() {
-    this.add(new ImportDirective(`static ${ClientRuntime.Extensions}`));
+    // this.add(new ImportDirective(`static ${ClientRuntime.Extensions}`));
     this.add(new ImportDirective(`System`));
+    this.add(new ImportDirective(`System.Management.Automation`));
+    this.add(new ImportDirective('Microsoft.Graph.PowerShell.Runtime.Cmdlets'));
 
     // generate cmdlet classes on top of the SDK
     const groups = groupBy(this.state.model.commands.operations, (op) => `${op.verb}${op.subject}`);
@@ -36,7 +37,10 @@ export class CmdletNamespace extends Namespace {
       // ) {
       //   continue;
       // }
-      this.addClass(await new CmdletClass(this, operations, this.state).init());
+      const outputType = getClassOutputType(operations[0], this.state);
+      if (!operations[0].details.csharp.subject.endsWith("ByRef") && outputType !== "string") {
+        this.addClass(await new CmdletClass(this, operations, this.state).init());
+      }
     }
     return this;
   }

@@ -23,7 +23,7 @@ const PropertiesRequiringNew = new Set(['Host', 'Events']);
 
 
 const Verbs = {
-  Common: 'global::System.Management.Automation.VerbsCommon',
+  Common: 'VerbsCommon',
   Data: 'global::System.Management.Automation.VerbsData',
   Lifecycle: 'global::System.Management.Automation.VerbsLifecycle',
   Diagnostic: 'global::System.Management.Automation.VerbsDiagnostic',
@@ -281,7 +281,7 @@ function isViaIdentity(operation: CommandOperation) {
   return operation.details.csharp.name.indexOf("ViaIdentity") > 0;
 }
 
-  function getClassOutputType(operation: CommandOperation, state: State): string|null {
+  export function getClassOutputType(operation: CommandOperation, state: State): string|null {
     for (const httpOperation of values(operation.callGraph)) {
       const pageableInfo = httpOperation.language.csharp?.pageable;
       // Add this for binary response in m4
@@ -354,7 +354,8 @@ export class CmdletClass extends Class {
     const noun = `${state.project.prefix}${operation.details.csharp.subjectPrefix}${operation.details.csharp.subject}`;
 
     const name = `${operation.details.csharp.verb}${noun}`;
-    const base = new Class(new Namespace(" Microsoft.Graph.PowerShell.Runtime.Cmdlets"), `${operation.details.csharp.verb}CmdletBase<${getClassOutputType(operation, state)}>`);
+    const outputType = getClassOutputType(operation, state);
+    const base = new Class(new Namespace("Microsoft.Graph.PowerShell.Runtime.Cmdlets"), `${operation.details.csharp.verb}CmdletBase<${outputType}>`);
     super(namespace, name, base);
     this.dropBodyParameter = operation.details.csharp.dropBodyParameter ? true : false;
     this.apply(objectInitializer);
@@ -445,6 +446,82 @@ export class CmdletClass extends Class {
       setAccess: Access.Protected
     });
     this.add(cmdletParameter);
+  }
+
+  getHelpMessage(propertyName: string): string {
+    switch (propertyName) {
+      case "Top": return "Show only the first n items";
+      case "Sort": return "Order items by property values";
+      case "Skip": return "Skip the first n items";
+      case "Search": return "Search items by search phrases";
+      case "Filter": return "Filter items by property values";
+      case "Count": return "Include count of items";
+      case "InputObject": return "Identity Parameter";
+      case "Property": return "Select properties to be returned";
+      case "ExpandProperty": return "Expand related entities";
+      default: return "";
+    }
+  }
+
+  ParameterAttribute(name: string, parameterSet: string, mandatory: boolean, valueFromPipeline: boolean): Attribute {
+      return new Attribute(ParameterAttribute, {parameters: [
+        `ParameterSetName = ${parameterSet}`,
+        `Mandatory = ${mandatory}`,
+        `HelpMessage = "${this.getHelpMessage(name)}"`,
+        `ValueFromPipeline = ${valueFromPipeline}`,
+      ]});
+  }
+
+  AddAttribute(property: Property): boolean {
+    let result = false;
+    const isPrimary = this.primaryIdParameter?.name === property.name;
+    const isSecondaryId = !isPrimary && property.name.endsWith("Id");
+
+    if (property.name === "ExpandProperty" || property.name === "Property") {
+      property.add(this.ParameterAttribute(property.name, "IdParameterSet", false, false));
+      property.add(this.ParameterAttribute(property.name, "InputObjectParameterSet", false, false));
+      property.add(this.ParameterAttribute(property.name, "ListParameterSet", false, false));
+      property.add(this.ParameterAttribute(property.name, "FilterParameterSet", false, false));
+      property.add(this.ParameterAttribute(property.name, "SearchParameterSet", false, false));
+      result = true;
+    }
+    else if (property.name === "Count" || property.name === "Skip"
+      || property.name === "Top" || property.name === "Sort") {
+      property.add(this.ParameterAttribute(property.name, "ListParameterSet", false, false));
+      property.add(this.ParameterAttribute(property.name, "FilterParameterSet", false, false));
+      property.add(this.ParameterAttribute(property.name, "SearchParameterSet", false, false));
+      result = true;
+    }
+    else if (property.name === "Filter") {
+      property.add(this.ParameterAttribute(property.name, "FilterParameterSet", true, false));
+      result = true;
+    }
+    else if (property.name === "Search") {
+      property.add(this.ParameterAttribute(property.name, "SearchParameterSet", true, false));
+      result = true;
+    }
+    else if (property.name === "InputObject") {
+      property.add(this.ParameterAttribute(property.name, "InputObjectParameterSet", true, true));
+      result = true;
+    }
+    else if (isPrimary) {
+      property.add(this.ParameterAttribute(property.name, "IdParameterSet", true, false));
+      result = true;
+    } else if (isSecondaryId) {
+      property.add(this.ParameterAttribute(property.name, "IdParameterSet", true, false));
+      property.add(this.ParameterAttribute(property.name, "InputObjectParameterSet", true, false));
+      property.add(this.ParameterAttribute(property.name, "ListParameterSet", true, false));
+      property.add(this.ParameterAttribute(property.name, "FilterParameterSet", true, false));
+      property.add(this.ParameterAttribute(property.name, "SearchParameterSet", true, false));
+      result = true;
+    }
+
+    // Id parameters should not have override
+    if (result && !isSecondaryId && !isPrimary) {
+      property.override = Modifier.Override;
+    }
+
+    return result;
   }
 
   public get getUrl(): string {
@@ -1200,7 +1277,9 @@ export class CmdletClass extends Class {
 
             $this.add(inputFileParameter);
           } else {
-            cmdletParameter.add(new Attribute(ParameterAttribute, { parameters: [new LiteralExpression(`Mandatory = ${vParam.required ? 'true' : 'false'}`), new LiteralExpression(`HelpMessage = "${escapeString(desc || '.')}"`)] }));
+            if (!this.AddAttribute(cmdletParameter)) {
+              cmdletParameter.add(new Attribute(ParameterAttribute, { parameters: [new LiteralExpression(`Mandatory = ${vParam.required ? 'true' : 'false'}`), new LiteralExpression(`HelpMessage = "${escapeString(desc || '.')}"`)] }));
+            }
             // addParameterBreakingChange(cmdletParameter, vParam);
             // addPreviewMessage(cmdletParameter, vParam);
             // addDefaultInfo(cmdletParameter, vParam);
@@ -1275,7 +1354,7 @@ export class CmdletClass extends Class {
         })) :
 
         // everything else
-        this.add(new BackedProperty(vParam.name, propertyType, {
+        this.add(new Property(vParam.name, propertyType, {
           metadata: {
             parameterDefinition: origin.details.csharp.httpParameter
           },
@@ -1303,12 +1382,14 @@ export class CmdletClass extends Class {
 
       this.thingsToSerialize.push(regularCmdletParameter);
 
-      const parameters = [new LiteralExpression(`Mandatory = ${vParam.required ? 'true' : 'false'}`), new LiteralExpression(`HelpMessage = "${escapeString(vParam.description) || '.'}"`)];
-      if (origin.details.csharp.isBodyParameter) {
-        parameters.push(new LiteralExpression('ValueFromPipeline = true'));
-        this.bodyParameter = regularCmdletParameter;
+      if (!this.AddAttribute(regularCmdletParameter)) {
+        const parameters = [new LiteralExpression(`Mandatory = ${vParam.required ? 'true' : 'false'}`), new LiteralExpression(`HelpMessage = "${escapeString(vParam.description) || '.'}"`)];
+        if (origin.details.csharp.isBodyParameter) {
+          parameters.push(new LiteralExpression('ValueFromPipeline = true'));
+          this.bodyParameter = regularCmdletParameter;
+        }
+        regularCmdletParameter.add(new Attribute(ParameterAttribute, { parameters }));
       }
-      regularCmdletParameter.add(new Attribute(ParameterAttribute, { parameters }));
       if (vParam.schema.type === SchemaType.Array) {
         regularCmdletParameter.add(new Attribute(AllowEmptyCollectionAttribute));
       }
@@ -1373,12 +1454,16 @@ export class CmdletClass extends Class {
   }
 
   private NewAddClassAttributes(operation: CommandOperation) {
+    const noun = `${this.state.project.prefix}${operation.details.csharp.subjectPrefix}${operation.details.csharp.subject}`;
     const cmdletAttribParams: Array<ExpressionOrLiteral> = [
-      category[operation.details.csharp.verb] ? verbEnum(category[operation.details.csharp.verb], operation.details.csharp.verb) : `"${operation.details.csharp.verb}"`
+      category[operation.details.csharp.verb] ? verbEnum(category[operation.details.csharp.verb], operation.details.csharp.verb) : `"${operation.details.csharp.verb}"`,
+      `"${noun}"`,
     ];
 
     if (this.NewIsWritableCmdlet(operation)) {
       cmdletAttribParams.push('SupportsShouldProcess = true');
+    } else {
+      cmdletAttribParams.push('DefaultParameterSetName = ListParameterSet')
     }
 
     if (this.clientsidePagination) {
@@ -1387,7 +1472,6 @@ export class CmdletClass extends Class {
 
     if (operation.details.csharp.hidden) {
       this.add(new Attribute(InternalExportAttribute));
-      const noun = `${operation.details.csharp.subjectPrefix}${operation.details.csharp.subject}`;
       const cmdletName = `${operation.details.csharp.verb}-${noun}${operation.details.csharp.name ? `_${operation.details.csharp.name}` : ''}`;
       this.state.message({ Channel: Channel.Debug, Text: `[DIRECTIVE] Applied 'hide' directive to ${cmdletName}. Added attribute ${InternalExportAttribute.declaration} to cmdlet.` });
     }
@@ -1528,15 +1612,15 @@ export class CmdletClass extends Class {
     if (operation.details.csharp.previewMessage) {
       this.add(new Attribute(ClientRuntime.PreviewMessageAttribute, { parameters: [`"${operation.details.csharp.previewMessage}"`] }))
     }
-    this.add(new Attribute(OutputTypeAttribute, { parameters: [...outputTypes] }));
+    // this.add(new Attribute(OutputTypeAttribute, { parameters: [...outputTypes] }));
     if (shouldAddPassThru) {
       const passThru = this.add(new Property('PassThru', SwitchParameter, { description: 'When specified, forces the cmdlet return a \'bool\' given that there isn\'t a return type by default.' }));
       passThru.add(new Attribute(ParameterAttribute, { parameters: ['Mandatory = false', 'HelpMessage = "Returns true when the command succeeds"'] }));
       passThru.add(new Attribute(CategoryAttribute, { parameters: [`${ParameterCategory}.Runtime`] }));
     }
 
-    this.add(new Attribute(DescriptionAttribute, { parameters: [new StringExpression(this.description)] }));
-    this.add(new Attribute(GeneratedAttribute));
+    // this.add(new Attribute(DescriptionAttribute, { parameters: [new StringExpression(this.description)] }));
+    // this.add(new Attribute(GeneratedAttribute));
     if (operation.extensions && operation.extensions['x-ms-metadata'] && operation.extensions['x-ms-metadata'].profiles) {
       const profileNames = Object.keys(operation.extensions && operation.extensions['x-ms-metadata'].profiles);
       // wrap profile names

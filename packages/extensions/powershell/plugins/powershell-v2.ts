@@ -22,28 +22,6 @@ const sourceFileCSharp = 'source-file-csharp';
 const resources = `${__dirname}/../../resources`;
 
 
-async function copyRequiredFiles(project: Project) {
-  const transformOutput = async (input: string) => { return await project.state.resolveVariables(input); };
-
-  // Project assets
-  await copyResources(join(resources, 'assets'), async (fname, content) => project.state.writeFile(fname, content, undefined, 'source-file-other'), undefined, transformOutput);
-
-  // Runtime files
-  await copyResources(join(resources, 'psruntime'), async (fname, content) => project.state.writeFile(join(project.runtimeFolder, fname), content, undefined, sourceFileCSharp), project.overrides, transformOutput);
-
-  // utils cmdlets
-  await copyResources(join(resources, 'utils'), async (fname, content) => project.state.writeFile(join(project.utilsFolder, fname), content, undefined, sourceFileCSharp), project.overrides, transformOutput);
-
-  // Modules files
-  if (project.azure) {
-    await copyBinaryResources(join(resources, 'modules'), async (fname, content) => project.state.writeFile(join(project.dependencyModuleFolder, fname), content, undefined, 'binary-file'));
-  }
-
-  if (project.azure) {
-    // Signing key file
-    await copyBinaryResources(join(resources, 'signing'), async (fname, content) => project.state.writeFile(join(project.baseFolder, fname), content, undefined, 'binary-file'));
-  }
-}
 
 
 export async function powershellV2(service: Host) {
@@ -54,26 +32,26 @@ export async function powershellV2(service: Host) {
 
     await project.writeFiles(async (filename, content) => project.state.writeFile(filename, applyOverrides(content, project.overrides), undefined, sourceFileCSharp));
 
-    await service.ProtectFiles(project.psd1);
-    await service.ProtectFiles(project.readme);
-    await service.ProtectFiles(project.customFolder);
-    await service.ProtectFiles(project.testFolder);
-    await service.ProtectFiles(project.docsFolder);
-    await service.ProtectFiles(project.examplesFolder);
-    await service.ProtectFiles(project.resourcesFolder);
+    // await service.ProtectFiles(project.psd1);
+    // await service.ProtectFiles(project.readme);
+    // await service.ProtectFiles(project.customFolder);
+    // await service.ProtectFiles(project.testFolder);
+    // await service.ProtectFiles(project.docsFolder);
+    // await service.ProtectFiles(project.examplesFolder);
+    // await service.ProtectFiles(project.resourcesFolder);
 
     // wait for all the generation to be done
-    await copyRequiredFiles(project);
-    await generateCsproj(project);
-    await generatePsm1(project);
-    await generatePsm1Custom(project);
-    await generatePsm1Internal(project);
-    await generateNuspec(project);
-    await generateGitIgnore(project);
-    await generateGitAttributes(project);
-    await generateReadme(project);
+    // await copyRequiredFiles(project);
+    // await generateCsproj(project);
+    // await generatePsm1(project);
+    // await generatePsm1Custom(project);
+    // await generatePsm1Internal(project);
+    // await generateNuspec(project);
+    // await generateGitIgnore(project);
+    // await generateGitAttributes(project);
+    // await generateReadme(project);
 
-    await generateScriptCmdlets(project);
+    // await generateScriptCmdlets(project);
 
   } catch (E: any) {
     if (debug) {

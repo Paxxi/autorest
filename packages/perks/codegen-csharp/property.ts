@@ -120,7 +120,7 @@ ${indent(g, 2)}
 ${indent(s, 2)}
 }`.slim() :
 
-        // both are single line 
+        // both are single line
         `${decl} { ${g} ${s} }`.slim();
     }
 
@@ -132,7 +132,7 @@ ${indent(s, 2)}
 ${indent(s, 2)}
 }`.slim() :
 
-        // both are single line 
+        // both are single line
         `${decl} { ${s} }`.slim();
     }
     if (g) {
@@ -143,7 +143,7 @@ ${indent(s, 2)}
 ${indent(g, 2)}
 }`.slim() :
 
-        // single line 
+        // single line
         `${decl} { ${g} }`.slim();
     }
 
